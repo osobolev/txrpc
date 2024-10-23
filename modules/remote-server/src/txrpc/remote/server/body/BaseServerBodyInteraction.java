@@ -1,36 +1,28 @@
-package txrpc.remote.server;
+package txrpc.remote.server.body;
 
-import txrpc.remote.common.HttpId;
-import txrpc.remote.common.HttpRequest;
-import txrpc.remote.common.HttpResult;
-import txrpc.remote.common.ISerializer;
+import txrpc.remote.common.body.HttpId;
+import txrpc.remote.common.body.HttpRequest;
+import txrpc.remote.common.body.HttpResult;
+import txrpc.remote.common.body.ISerializer;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
-public abstract class BaseBodyHttpRequest implements IHttpRequest {
+public abstract class BaseServerBodyInteraction implements IBodyInteraction {
 
     private final ISerializer serializer;
-    private final String hostName;
     private final InputStream in;
     private final OutputStream out;
 
-    protected BaseBodyHttpRequest(ISerializer serializer, String hostName, InputStream in, OutputStream out) {
+    protected BaseServerBodyInteraction(ISerializer serializer, InputStream in, OutputStream out) {
         this.serializer = serializer;
-        this.hostName = hostName;
         this.in = in;
         this.out = out;
     }
 
-    @Override
-    public final String hostName() {
-        return hostName;
-    }
-
     protected abstract ServerHttpId serverId(HttpId id);
 
-    @Override
     public final ServerHttpRequest requestData() throws IOException {
         HttpRequest request;
         try (ISerializer.Reader fromClient = serializer.newReader(in)) {
@@ -42,7 +34,6 @@ public abstract class BaseBodyHttpRequest implements IHttpRequest {
         );
     }
 
-    @Override
     public final void write(HttpResult result) throws IOException {
         try (ISerializer.Writer toClient = serializer.newWriter(out)) {
             toClient.write(result, HttpResult.class);

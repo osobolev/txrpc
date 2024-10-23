@@ -1,9 +1,10 @@
-package txrpc.remote.client;
+package txrpc.remote.client.body;
 
-import txrpc.remote.common.HttpRequest;
-import txrpc.remote.common.HttpResult;
-import txrpc.remote.common.ISerializer;
-import txrpc.remote.common.JavaSerializer;
+import txrpc.remote.client.IClientSessionId;
+import txrpc.remote.common.body.HttpRequest;
+import txrpc.remote.common.body.HttpResult;
+import txrpc.remote.common.body.ISerializer;
+import txrpc.remote.common.body.JavaSerializer;
 
 import java.io.IOException;
 import java.net.*;
@@ -72,12 +73,7 @@ public final class DefaultHttpClient implements IHttpClient {
     }
 
     @Override
-    public Object newContext() {
-        return null;
-    }
-
-    @Override
-    public HttpResult call(Class<?> retType, Object clientContext, HttpRequest request) throws IOException {
+    public HttpResult call(Class<?> retType, IClientSessionId sessionId, HttpRequest request) throws IOException {
         HttpURLConnection conn = open(url, proxy, connectTimeout);
         conn.connect();
         try {

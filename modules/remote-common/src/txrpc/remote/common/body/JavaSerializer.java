@@ -1,4 +1,6 @@
-package txrpc.remote.common;
+package txrpc.remote.common.body;
+
+import txrpc.remote.common.UnrecoverableRemoteException;
 
 import java.io.*;
 

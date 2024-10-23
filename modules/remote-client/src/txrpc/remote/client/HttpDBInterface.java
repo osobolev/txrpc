@@ -2,58 +2,60 @@ package txrpc.remote.client;
 
 import txrpc.api.ISimpleTransaction;
 import txrpc.api.ITransaction;
-import txrpc.remote.common.*;
+import txrpc.remote.common.IRemoteDBInterface;
+import txrpc.remote.common.RemoteException;
+import txrpc.remote.common.TxRpcInteraction;
 
+import java.io.IOException;
 import java.sql.SQLException;
 
 final class HttpDBInterface implements IRemoteDBInterface {
 
-    private final HttpRootObject rootObject;
-    private final HttpDBInterfaceInfo info;
-    private final Object clientContext;
+    private final TxRpcInteraction<IClientSessionId> interaction;
+    private final IClientSessionId sessionId;
+    private final Object userObject;
 
-    HttpDBInterface(HttpRootObject rootObject, HttpDBInterfaceInfo info, Object clientContext) {
-        this.rootObject = rootObject;
-        this.info = info;
-        this.clientContext = clientContext;
+    HttpDBInterface(TxRpcInteraction<IClientSessionId> interaction, IClientSessionId sessionId, Object userObject) {
+        this.interaction = interaction;
+        this.sessionId = sessionId;
+        this.userObject = userObject;
     }
 
+    @Override
     public ISimpleTransaction getSimpleTransaction() {
-        return new HttpSimpleTransaction(rootObject, info.id, clientContext, HttpCommand.INVOKE);
+        return new HttpSimpleTransaction(interaction, sessionId);
     }
 
+    @Override
     public ITransaction getTransaction() throws SQLException {
         try {
-            HttpId transactionId = rootObject.httpInvoke(HttpId.class, clientContext, HttpCommand.GET_TRANSACTION, info.id);
-            return new HttpTransaction(rootObject, transactionId, clientContext);
-        } catch (SQLException | RuntimeException ex) {
-            throw ex;
-        } catch (Throwable ex) {
+            String transactionId = interaction.beginTransaction(sessionId).rethrow(SQLException.class);
+            return new HttpTransaction(interaction, sessionId, transactionId);
+        } catch (IOException ex) {
             throw new RemoteException(ex);
         }
     }
 
+    @Override
     public void ping() {
         try {
-            rootObject.httpInvoke(void.class, clientContext, HttpCommand.PING, info.id);
-        } catch (RuntimeException ex) {
-            throw ex;
-        } catch (Throwable ex) {
+            interaction.ping(sessionId).rethrow(RuntimeException.class);
+        } catch (IOException ex) {
             throw new RemoteException(ex);
         }
     }
 
-    public void close() {
+    @Override
+    public void close() throws SQLException {
         try {
-            rootObject.httpInvoke(void.class, clientContext, HttpCommand.CLOSE, info.id);
-        } catch (RuntimeException ex) {
-            throw ex;
-        } catch (Throwable ex) {
+            interaction.close(sessionId).rethrow(SQLException.class);
+        } catch (IOException ex) {
             throw new RemoteException(ex);
         }
     }
 
+    @Override
     public Object getUserObject() {
-        return info.userObject;
+        return userObject;
     }
 }

@@ -1,4 +1,4 @@
-package txrpc.remote.common;
+package txrpc.remote.common.body;
 
 import java.io.Closeable;
 import java.io.IOException;

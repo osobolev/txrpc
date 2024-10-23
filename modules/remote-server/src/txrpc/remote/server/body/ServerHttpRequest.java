@@ -1,7 +1,7 @@
-package txrpc.remote.server;
+package txrpc.remote.server.body;
 
 import txrpc.api.IDBCommon;
-import txrpc.remote.common.HttpCommand;
+import txrpc.remote.common.body.HttpCommand;
 
 public final class ServerHttpRequest {
 

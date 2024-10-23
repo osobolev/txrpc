@@ -1,7 +1,11 @@
 package txrpc.remote.client;
 
-import txrpc.remote.common.*;
+import txrpc.remote.common.IConnectionFactory;
+import txrpc.remote.common.IRemoteDBInterface;
+import txrpc.remote.common.RemoteException;
+import txrpc.remote.common.TxRpcInteraction;
 
+import java.io.IOException;
 import java.sql.SQLException;
 
 /**
@@ -9,22 +13,18 @@ import java.sql.SQLException;
  */
 public final class HttpConnectionFactory implements IConnectionFactory {
 
-    private final HttpId id;
-    private final HttpRootObject rootObject;
+    private final TxRpcInteraction<IClientSessionId> interaction;
 
-    public HttpConnectionFactory(IHttpClient client) {
-        this.id = new HttpId();
-        this.rootObject = new HttpRootObject(client);
+    public HttpConnectionFactory(TxRpcInteraction<IClientSessionId> interaction) {
+        this.interaction = interaction;
     }
 
+    @Override
     public IRemoteDBInterface openConnection(String user, String password) throws SQLException {
         try {
-            Object clientContext = rootObject.newContext();
-            HttpDBInterfaceInfo info = rootObject.httpInvoke(HttpDBInterfaceInfo.class, clientContext, HttpCommand.OPEN, id, user, password);
-            return new HttpDBInterface(rootObject, info, clientContext);
-        } catch (SQLException | RuntimeException ex) {
-            throw ex;
-        } catch (Throwable ex) {
+            TxRpcInteraction.NewSession<IClientSessionId> session = interaction.open(user, password).rethrow(SQLException.class);
+            return new HttpDBInterface(interaction, session.sessionId, session.userObject);
+        } catch (IOException ex) {
             throw new RemoteException(ex);
         }
     }

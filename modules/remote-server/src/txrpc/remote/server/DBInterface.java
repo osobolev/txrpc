@@ -3,7 +3,6 @@ package txrpc.remote.server;
 import txrpc.api.ISimpleTransaction;
 import txrpc.api.ITransaction;
 import txrpc.remote.common.IRemoteDBInterface;
-import txrpc.remote.common.WatcherThread;
 import txrpc.runtime.SessionContext;
 import txrpc.runtime.SimpleTransaction;
 import txrpc.runtime.Transaction;
@@ -15,23 +14,19 @@ import java.util.concurrent.atomic.AtomicLong;
 final class DBInterface implements IRemoteDBInterface {
 
     private final SessionContext session;
-    private final LocalConnectionFactory fact;
     private final TxRpcGlobalContext global;
     private final TxRpcLogger logger;
     private final boolean server;
     private final long sessionOrderId;
-    final String sessionLongId;
 
     private final AtomicLong lastActive = new AtomicLong(getCurrentTime());
 
-    DBInterface(SessionContext session, LocalConnectionFactory fact,
-                long sessionOrderId, String sessionLongId, boolean server) {
+    DBInterface(SessionContext session, TxRpcGlobalContext global, TxRpcLogger logger,
+                long sessionOrderId, boolean server) {
         this.session = session;
-        this.fact = fact;
-        this.global = fact.global;
-        this.logger = fact.logger;
+        this.global = global;
+        this.logger = logger;
         this.sessionOrderId = sessionOrderId;
-        this.sessionLongId = sessionLongId;
         this.server = server;
         if (LocalConnectionFactory.TRACE) {
             logger.info("Opened " + getConnectionName());
@@ -54,17 +49,15 @@ final class DBInterface implements IRemoteDBInterface {
         return System.currentTimeMillis();
     }
 
+    long getLastActive() {
+        return lastActive.get();
+    }
+
     public void ping() {
         lastActive.set(getCurrentTime());
     }
 
-    void tracePing(String host) {
-        if (LocalConnectionFactory.TRACE) {
-            logger.trace(":: Ping from " + host);
-        }
-    }
-
-    private void close(boolean explicit) {
+    void close(boolean explicit) {
         if (LocalConnectionFactory.TRACE) {
             if (explicit) {
                 logger.info("Closing " + getConnectionName());
@@ -82,18 +75,9 @@ final class DBInterface implements IRemoteDBInterface {
 
     public void close() {
         close(true);
-        fact.endSession(this);
     }
 
     public Object getUserObject() {
         return session.getUserObject();
-    }
-
-    boolean isTimedOut(long time) {
-        boolean timeout = time - lastActive.get() >= WatcherThread.ACTIVITY_CHECK_INTERVAL;
-        if (timeout) {
-            close(false);
-        }
-        return timeout;
     }
 }

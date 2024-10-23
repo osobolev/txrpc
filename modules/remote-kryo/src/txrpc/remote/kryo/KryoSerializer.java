@@ -7,8 +7,8 @@ import com.esotericsoftware.kryo.io.Output;
 import com.esotericsoftware.kryo.serializers.JavaSerializer;
 import com.esotericsoftware.kryo.util.DefaultInstantiatorStrategy;
 import org.objenesis.strategy.StdInstantiatorStrategy;
-import txrpc.remote.common.ISerializer;
 import txrpc.remote.common.UnrecoverableRemoteException;
+import txrpc.remote.common.body.ISerializer;
 
 import java.io.InputStream;
 import java.io.OutputStream;

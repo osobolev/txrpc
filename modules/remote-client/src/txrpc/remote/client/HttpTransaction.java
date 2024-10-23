@@ -1,34 +1,40 @@
 package txrpc.remote.client;
 
 import txrpc.api.ITransaction;
-import txrpc.remote.common.HttpCommand;
-import txrpc.remote.common.HttpId;
 import txrpc.remote.common.RemoteException;
+import txrpc.remote.common.TxRpcInteraction;
 
+import java.io.IOException;
 import java.sql.SQLException;
 
 final class HttpTransaction extends HttpSimpleTransaction implements ITransaction {
 
-    HttpTransaction(HttpRootObject rootObject, HttpId id, Object clientContext) {
-        super(rootObject, id, clientContext, HttpCommand.INVOKE);
+    private final String transactionId;
+
+    HttpTransaction(TxRpcInteraction<IClientSessionId> interaction, IClientSessionId sessionId, String transactionId) {
+        super(interaction, sessionId);
+        this.transactionId = transactionId;
     }
 
+    @Override
+    protected String getTransactionId() {
+        return transactionId;
+    }
+
+    @Override
     public void rollback() throws SQLException {
         try {
-            rootObject.httpInvoke(void.class, clientContext, HttpCommand.ROLLBACK, id);
-        } catch (SQLException | RuntimeException ex) {
-            throw ex;
-        } catch (Throwable ex) {
+            interaction.endTransaction(sessionId, transactionId, true).rethrow(SQLException.class);
+        } catch (IOException ex) {
             throw new RemoteException(ex);
         }
     }
 
+    @Override
     public void commit() throws SQLException {
         try {
-            rootObject.httpInvoke(void.class, clientContext, HttpCommand.COMMIT, id);
-        } catch (SQLException | RuntimeException ex) {
-            throw ex;
-        } catch (Throwable ex) {
+            interaction.endTransaction(sessionId, transactionId, false).rethrow(SQLException.class);
+        } catch (IOException ex) {
             throw new RemoteException(ex);
         }
     }

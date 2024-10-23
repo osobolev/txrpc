@@ -6,10 +6,8 @@ import txrpc.runtime.SessionContext;
 import txrpc.runtime.TxRpcGlobalContext;
 
 import java.sql.SQLException;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.UUID;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.function.Function;
 
 /**
  * {@link IConnectionFactory} implementation for local connection.
@@ -28,8 +26,6 @@ public final class LocalConnectionFactory implements IConnectionFactory {
 
     private final AtomicLong connectionCount = new AtomicLong(0);
 
-    private final Map<String, DBInterface> connectionMap = new HashMap<>();
-
     /**
      * Constructor.
      */
@@ -44,43 +40,17 @@ public final class LocalConnectionFactory implements IConnectionFactory {
         this.server = server;
     }
 
-    DBInterface openConnection(String user, String password, String host, String newSessionId) throws SQLException {
+    <T> T openConnection(String user, String password, String host,
+                         Function<DBInterface, T> onCreate) throws SQLException {
         long sessionOrderId = connectionCount.getAndIncrement();
         SessionContext session = sessionFactory.login(logger, sessionOrderId, user, password);
+        DBInterface db = new DBInterface(session, global, logger, sessionOrderId, server);
+        T result = onCreate.apply(db);
         global.fireSessionListeners(listener -> listener.opened(sessionOrderId, user, host, session.getUserObject()));
-        String sessionLongId;
-        if (newSessionId == null) {
-            sessionLongId = UUID.randomUUID().toString();
-        } else {
-            sessionLongId = newSessionId;
-        }
-        DBInterface lw = new DBInterface(session, this, sessionOrderId, sessionLongId, server);
-        synchronized (connectionMap) {
-            connectionMap.put(sessionLongId, lw);
-        }
-        return lw;
+        return result;
     }
 
     public IRemoteDBInterface openConnection(String user, String password) throws SQLException {
-        return openConnection(user, password, null, null);
-    }
-
-    void endSession(DBInterface db) {
-        synchronized (connectionMap) {
-            connectionMap.remove(db.sessionLongId);
-        }
-    }
-
-    DBInterface getSession(String sessionLongId) {
-        synchronized (connectionMap) {
-            return connectionMap.get(sessionLongId);
-        }
-    }
-
-    void checkActivity() {
-        long time = DBInterface.getCurrentTime();
-        synchronized (connectionMap) {
-            connectionMap.values().removeIf(db -> db.isTimedOut(time));
-        }
+        return openConnection(user, password, null, Function.identity());
     }
 }
