@@ -4,7 +4,6 @@ import txrpc.api.IDBCommon;
 import txrpc.remote.common.*;
 
 import java.io.IOException;
-import java.lang.reflect.Type;
 
 final class HttpRootObject {
 
@@ -23,7 +22,7 @@ final class HttpRootObject {
         return (T) httpInvoke(retType, clientContext, command, id, null, null, null, params);
     }
 
-    Object httpInvoke(Type retType, Object clientContext, HttpCommand command, HttpId id, Class<? extends IDBCommon> iface, String method,
+    Object httpInvoke(Class<?> retType, Object clientContext, HttpCommand command, HttpId id, Class<? extends IDBCommon> iface, String method,
                       Class<?>[] paramTypes, Object[] params) throws Throwable {
         HttpRequest request = new HttpRequest(id, command, iface, method, paramTypes, params);
         HttpResult result;

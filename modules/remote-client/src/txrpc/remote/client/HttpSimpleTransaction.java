@@ -25,7 +25,7 @@ class HttpSimpleTransaction implements ISimpleTransaction {
         return iface.cast(Proxy.newProxyInstance(
             iface.getClassLoader(),
             new Class<?>[] {iface},
-            (proxy, method, args) -> rootObject.httpInvoke(method.getGenericReturnType(), clientContext, command, id, iface, method.getName(), method.getParameterTypes(), args)
+            (proxy, method, args) -> rootObject.httpInvoke(method.getReturnType(), clientContext, command, id, iface, method.getName(), method.getParameterTypes(), args)
         ));
     }
 }

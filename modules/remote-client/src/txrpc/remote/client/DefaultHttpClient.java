@@ -6,7 +6,6 @@ import txrpc.remote.common.ISerializer;
 import txrpc.remote.common.JavaSerializer;
 
 import java.io.IOException;
-import java.lang.reflect.Type;
 import java.net.*;
 
 public final class DefaultHttpClient implements IHttpClient {
@@ -78,7 +77,7 @@ public final class DefaultHttpClient implements IHttpClient {
     }
 
     @Override
-    public HttpResult call(Type retType, Object clientContext, HttpRequest request) throws IOException {
+    public HttpResult call(Class<?> retType, Object clientContext, HttpRequest request) throws IOException {
         HttpURLConnection conn = open(url, proxy, connectTimeout);
         conn.connect();
         try {
