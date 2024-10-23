@@ -42,7 +42,6 @@ public final class HttpDispatcher {
 
     {
         actions.put(HttpCommand.OPEN, (request, id, params) -> {
-            checkApplication(id);
             String user = (String) params[0];
             String password = (String) params[1];
             return openConnection(request, id, user, password);
@@ -102,13 +101,7 @@ public final class HttpDispatcher {
         return new HttpDBInterfaceInfo(request.session(id, db.sessionLongId), userObject);
     }
 
-    private void checkApplication(ServerHttpId id) {
-        if (!application.equals(id.application))
-            throw new RemoteException("Wrong application");
-    }
-
     private DBInterface checkSession(ServerHttpId id) {
-        checkApplication(id);
         if (id.sessionId == null)
             throw new RemoteException("Invalid session");
         DBInterface db = lw.getSession(id.sessionId);

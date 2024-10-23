@@ -14,7 +14,7 @@ public final class BodyHttpRequest extends BaseBodyHttpRequest {
 
     @Override
     protected ServerHttpId serverId(HttpId id) {
-        return new ServerHttpId(id.application, id.sessionId, id.transactionId);
+        return new ServerHttpId(id.sessionId, id.transactionId);
     }
 
     @Override
@@ -24,11 +24,11 @@ public final class BodyHttpRequest extends BaseBodyHttpRequest {
 
     @Override
     public HttpId session(ServerHttpId id, String sessionId) {
-        return new HttpId(id.application, sessionId, null);
+        return new HttpId(sessionId, null);
     }
 
     @Override
     public HttpId transaction(ServerHttpId id, long transactionId) {
-        return new HttpId(id.application, id.sessionId, transactionId);
+        return new HttpId(id.sessionId, transactionId);
     }
 }

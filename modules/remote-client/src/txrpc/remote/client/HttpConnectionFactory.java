@@ -12,8 +12,8 @@ public final class HttpConnectionFactory implements IConnectionFactory {
     private final HttpId id;
     private final HttpRootObject rootObject;
 
-    public HttpConnectionFactory(String application, IHttpClient client) {
-        this.id = new HttpId(application);
+    public HttpConnectionFactory(IHttpClient client) {
+        this.id = new HttpId();
         this.rootObject = new HttpRootObject(client);
     }
 
