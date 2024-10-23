@@ -12,7 +12,12 @@ fun add(name: String) {
 
 add("api")
 add("runtime")
+
+add("body-common")
+add("body-client")
+add("body-server")
+add("body-kryo")
+
 add("remote-common")
 add("remote-client")
 add("remote-server")
-add("remote-kryo")

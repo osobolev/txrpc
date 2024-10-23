@@ -1,4 +1,4 @@
-package txrpc.remote.kryo;
+package txrpc.remote.common.body.kryo;
 
 import com.esotericsoftware.kryo.Kryo;
 import com.esotericsoftware.kryo.KryoException;
