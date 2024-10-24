@@ -89,7 +89,7 @@ public final class BodyHttpRequest implements IHttpRequest {
     }
 
     @Override
-    public void writeError(Exception error) throws IOException {
+    public void writeError(Throwable error) throws IOException {
         request.write(new HttpResult(null, error));
     }
 }

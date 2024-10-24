@@ -12,5 +12,5 @@ public interface IHttpRequest {
 
     void perform(TxRpcInteraction<IServerSessionId> interaction) throws IOException;
 
-    void writeError(Exception error) throws IOException;
+    void writeError(Throwable error) throws IOException;
 }
