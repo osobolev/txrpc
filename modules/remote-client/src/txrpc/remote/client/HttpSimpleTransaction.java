@@ -3,6 +3,7 @@ package txrpc.remote.client;
 import txrpc.api.IDBCommon;
 import txrpc.api.ISimpleTransaction;
 import txrpc.remote.common.Either;
+import txrpc.remote.common.RemoteException;
 import txrpc.remote.common.TxRpcInteraction;
 
 import java.io.IOException;
@@ -32,7 +33,7 @@ class HttpSimpleTransaction implements ISimpleTransaction {
                 try {
                     result = interaction.invoke(sessionId, getTransactionId(), method, args);
                 } catch (IOException ex) {
-                    throw new RuntimeException(ex);
+                    throw new RemoteException(ex);
                 }
                 return result.rethrow(method);
             }
