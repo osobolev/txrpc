@@ -1,6 +1,7 @@
 package txrpc.remote.common;
 
 import java.lang.reflect.Method;
+import java.util.function.Function;
 
 public final class Either<T> {
 
@@ -18,10 +19,6 @@ public final class Either<T> {
 
     public static <T> Either<T> error(Throwable error) {
         return new Either<>(null, error);
-    }
-
-    public static <T> Either<T> error(String error) {
-        return error(new RemoteException(error));
     }
 
     public T getResult() {
@@ -71,19 +68,10 @@ public final class Either<T> {
         return rethrow(ex -> allowed.isInstance(ex) ? allowed.cast(ex) : null);
     }
 
-    public interface Mapper<T, U, E extends Exception> {
-
-        U map(T value) throws E;
-    }
-
-    public <U, E extends Exception> Either<U> then(Mapper<T, Either<U>, E> f) throws E {
+    public <U> Either<U> map(Function<T, U> f) {
         if (error != null) {
             return error(error);
         }
-        return f.map(result);
-    }
-
-    public <U, E extends Exception> Either<U> map(Mapper<T, U, E> f) throws E {
-        return then(value -> ok(f.map(value)));
+        return ok(f.apply(result));
     }
 }
