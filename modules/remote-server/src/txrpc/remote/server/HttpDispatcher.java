@@ -97,15 +97,15 @@ public final class HttpDispatcher {
     private TxRpcInteraction<IServerSessionId> getInteraction(IHttpRequest request) {
         return new TxRpcInteraction<IServerSessionId>() {
 
-            private Either<DBWrapper> getSession(IServerSessionId sessionId) {
+            private DBWrapper getSession(IServerSessionId sessionId) {
                 if (sessionId == null) {
-                    return Either.error("No session ID");
+                    throw new RemoteException("No session ID");
                 }
                 DBWrapper db = maybeSession(sessionId);
                 if (db == null) {
-                    return Either.error("Session closed");
+                    throw new RemoteException("Session closed");
                 }
-                return Either.ok(db);
+                return db;
             }
 
             @Override
@@ -129,69 +129,62 @@ public final class HttpDispatcher {
 
             @Override
             public Either<String> beginTransaction(IServerSessionId sessionId) {
-                return getSession(sessionId).then(db -> {
-                    ITransaction trans = db.db.getTransaction();
-                    String transactionId = String.valueOf(transactionCount.getAndIncrement());
-                    db.transactions.put(transactionId, trans);
-                    return Either.ok(transactionId);
-                });
+                DBWrapper db = getSession(sessionId);
+                ITransaction trans = db.db.getTransaction();
+                String transactionId = String.valueOf(transactionCount.getAndIncrement());
+                db.transactions.put(transactionId, trans);
+                return Either.ok(transactionId);
             }
 
             @Override
             public Either<Void> endTransaction(IServerSessionId sessionId, String transactionId, boolean commit) {
-                return getSession(sessionId).then(db -> {
-                    if (transactionId == null) {
-                        return Either.error("No transaction ID");
+                DBWrapper db = getSession(sessionId);
+                if (transactionId == null) {
+                    throw new RemoteException("No transaction ID");
+                }
+                ITransaction transaction = db.transactions.remove(transactionId);
+                if (transaction == null) {
+                    throw new RemoteException("Transaction inactive: " + transactionId);
+                }
+                try {
+                    if (commit) {
+                        transaction.commit();
+                    } else {
+                        transaction.rollback();
                     }
-                    ITransaction transaction = db.transactions.remove(transactionId);
-                    if (transaction == null) {
-                        return Either.error("Transaction inactive: " + transactionId);
-                    }
-                    try {
-                        if (commit) {
-                            transaction.commit();
-                        } else {
-                            transaction.rollback();
-                        }
-                    } catch (SQLException ex) {
-                        log(ex);
-                        return Either.error(ex);
-                    }
-                    return Either.ok(null);
-                });
+                } catch (SQLException ex) {
+                    log(ex);
+                    return Either.error(ex);
+                }
+                return Either.ok(null);
             }
 
             @SuppressWarnings("unchecked")
             @Override
             public Either<Object> invoke(IServerSessionId sessionId, String transactionId, Method method, Object[] args) {
-                return getSession(sessionId).then(db -> {
-                    Class<? extends IDBCommon> iface = (Class<? extends IDBCommon>) method.getDeclaringClass();
-                    Object impl;
-                    if (transactionId != null) {
-                        ITransaction transaction = db.transactions.get(transactionId);
-                        if (transaction == null)
-                            return Either.error("Transaction inactive: " + transactionId);
-                        impl = transaction.getInterface(iface);
-                    } else {
-                        ISimpleTransaction t = db.db.getSimpleTransaction();
-                        impl = t.getInterface(iface);
-                    }
-                    Object result = null;
-                    Throwable error = null;
-                    try {
-                        result = method.invoke(impl, args);
-                    } catch (InvocationTargetException itex) {
-                        error = itex.getTargetException();
-                    } catch (Throwable ex) {
-                        log(ex);
-                        error = new RemoteException(ex);
-                    }
-                    if (error != null) {
-                        return Either.error(error);
-                    } else {
-                        return Either.ok(result);
-                    }
-                });
+                DBWrapper db = getSession(sessionId);
+                Class<? extends IDBCommon> iface = (Class<? extends IDBCommon>) method.getDeclaringClass();
+                Object impl;
+                if (transactionId != null) {
+                    ITransaction transaction = db.transactions.get(transactionId);
+                    if (transaction == null)
+                        throw new RemoteException("Transaction inactive: " + transactionId);
+                    impl = transaction.getInterface(iface);
+                } else {
+                    ISimpleTransaction t = db.db.getSimpleTransaction();
+                    impl = t.getInterface(iface);
+                }
+                try {
+                    Object result = method.invoke(impl, args);
+                    return Either.ok(result);
+                } catch (InvocationTargetException itex) {
+                    Throwable error = itex.getTargetException();
+                    log(error);
+                    return Either.error(error);
+                } catch (Throwable ex) {
+                    log(ex);
+                    throw new RemoteException("Cannot invoke method", ex);
+                }
             }
 
             @Override
@@ -208,11 +201,10 @@ public final class HttpDispatcher {
 
             @Override
             public Either<Void> close(IServerSessionId sessionId) {
-                return getSession(sessionId).then(db -> {
-                    db.db.close();
-                    endSession(db.sessionId);
-                    return Either.ok(null);
-                });
+                DBWrapper db = getSession(sessionId);
+                db.db.close();
+                endSession(db.sessionId);
+                return Either.ok(null);
             }
         };
     }
@@ -223,7 +215,14 @@ public final class HttpDispatcher {
      * @param request HTTP request
      */
     public void dispatch(IHttpRequest request) throws IOException {
-        request.perform(getInteraction(request));
+        try {
+            request.perform(getInteraction(request));
+        } catch (RemoteException ex) {
+            request.writeError(ex);
+        } catch (RuntimeException | Error ex) {
+            log(ex);
+            throw ex;
+        }
     }
 
     /**

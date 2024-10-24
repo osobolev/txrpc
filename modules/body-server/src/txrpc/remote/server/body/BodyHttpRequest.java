@@ -1,6 +1,7 @@
 package txrpc.remote.server.body;
 
 import txrpc.remote.common.Either;
+import txrpc.remote.common.RemoteException;
 import txrpc.remote.common.TxRpcInteraction;
 import txrpc.remote.common.body.HttpCommand;
 import txrpc.remote.common.body.HttpDBInterfaceInfo;
@@ -31,12 +32,11 @@ public final class BodyHttpRequest implements IHttpRequest {
         return request.newSessionId();
     }
 
-    private static Either<Method> findMethod(ServerHttpRequest data) {
+    private static Method findMethod(ServerHttpRequest data) {
         try {
-            Method method = data.iface.getMethod(data.method, data.paramTypes);
-            return Either.ok(method);
+            return data.iface.getMethod(data.method, data.paramTypes);
         } catch (Throwable ex) {
-            return Either.error("Method not found");
+            throw new RemoteException("Method not found");
         }
     }
 
@@ -71,15 +71,15 @@ public final class BodyHttpRequest implements IHttpRequest {
         }
         case INVOKE: {
             String transactionId = transactionId(id);
-            return findMethod(data)
-                .then(method -> interaction.invoke(sessionId(id), transactionId, method, data.params));
+            Method method = findMethod(data);
+            return interaction.invoke(sessionId(id), transactionId, method, data.params);
         }
         case PING:
             return interaction.ping(sessionId(id));
         case CLOSE:
             return interaction.close(sessionId(id));
         }
-        return Either.error("Unknown command");
+        throw new RemoteException("Unknown command");
     }
 
     @Override
