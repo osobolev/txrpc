@@ -1,5 +1,6 @@
 package txrpc.remote.client.body;
 
+import txrpc.remote.client.HttpClientUtil;
 import txrpc.remote.client.IClientSessionId;
 import txrpc.remote.common.body.HttpRequest;
 import txrpc.remote.common.body.HttpResult;
@@ -62,29 +63,16 @@ public final class DefaultHttpClient implements IHttpClient {
         this.serializer = serializer;
     }
 
-    public static HttpURLConnection open(URL url, Proxy proxy, int connectTimeout) throws IOException {
-        HttpURLConnection conn = (HttpURLConnection) url.openConnection(proxy);
-        conn.setDoOutput(true);
-        conn.setRequestMethod("POST");
-        conn.setConnectTimeout(connectTimeout);
-        conn.setUseCaches(false);
-        conn.setAllowUserInteraction(false);
-        return conn;
-    }
-
     @Override
     public HttpResult call(Class<?> retType, IClientSessionId sessionId, HttpRequest request) throws IOException {
-        HttpURLConnection conn = open(url, proxy, connectTimeout);
-        conn.connect();
-        try {
+        HttpURLConnection conn = HttpClientUtil.open(url, proxy, connectTimeout);
+        return HttpClientUtil.runQuery(conn, () -> {
             try (ISerializer.Writer toServer = serializer.newWriter(conn.getOutputStream())) {
                 toServer.write(request, HttpRequest.class);
             }
             try (ISerializer.Reader fromServer = serializer.newReader(conn.getInputStream())) {
                 return fromServer.read(HttpResult.class);
             }
-        } finally {
-            conn.disconnect();
-        }
+        });
     }
 }
