@@ -15,26 +15,18 @@ public final class ServerBodyInteraction extends BaseServerBodyInteraction {
     }
 
     @Override
-    protected ServerHttpId serverId(HttpId id) {
-        return new ServerHttpId(
-            SimpleServerSessionId.create(id.sessionId),
-            id.transactionId == null ? null : id.transactionId.toString()
-        );
-    }
-
-    @Override
     public IServerSessionId newSessionId() {
         return SimpleServerSessionId.create(UUID.randomUUID().toString());
     }
 
     @Override
-    public IServerSessionId sessionId(ServerHttpId id) {
-        return id.sessionId;
+    public IServerSessionId sessionId(HttpId id) {
+        return SimpleServerSessionId.create(id.sessionId);
     }
 
     @Override
-    public String transactionId(ServerHttpId id) {
-        return id.transactionId;
+    public String transactionId(HttpId id) {
+        return id.transactionId == null ? null : id.transactionId.toString();
     }
 
     @Override

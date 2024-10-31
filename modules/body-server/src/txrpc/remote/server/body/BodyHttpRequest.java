@@ -3,9 +3,7 @@ package txrpc.remote.server.body;
 import txrpc.remote.common.Either;
 import txrpc.remote.common.RemoteException;
 import txrpc.remote.common.TxRpcInteraction;
-import txrpc.remote.common.body.HttpCommand;
-import txrpc.remote.common.body.HttpDBInterfaceInfo;
-import txrpc.remote.common.body.HttpResult;
+import txrpc.remote.common.body.*;
 import txrpc.remote.server.IHttpRequest;
 import txrpc.remote.server.IServerSessionId;
 
@@ -32,7 +30,7 @@ public final class BodyHttpRequest implements IHttpRequest {
         return request.newSessionId();
     }
 
-    private static Method findMethod(ServerHttpRequest data) {
+    private static Method findMethod(HttpRequest data) {
         try {
             return data.iface.getMethod(data.method, data.paramTypes);
         } catch (Throwable ex) {
@@ -41,10 +39,10 @@ public final class BodyHttpRequest implements IHttpRequest {
     }
 
     private Either<?> getResult(TxRpcInteraction<IServerSessionId> interaction) throws IOException {
-        ServerHttpRequest data = request.requestData();
-        ServerHttpId id = data.id;
+        HttpRequest data = request.requestData();
+        HttpId id = data.id;
         IServerSessionId sessionId = request.sessionId(id);
-        HttpCommand command = data.command;
+        HttpCommand command = data.getCommand();
         switch (command) {
         case OPEN: {
             String user = (String) data.params[0];

@@ -1,6 +1,5 @@
 package txrpc.remote.server.body;
 
-import txrpc.remote.common.body.HttpId;
 import txrpc.remote.common.body.HttpRequest;
 import txrpc.remote.common.body.HttpResult;
 import txrpc.remote.common.body.ISerializer;
@@ -21,17 +20,10 @@ public abstract class BaseServerBodyInteraction implements IBodyInteraction {
         this.out = out;
     }
 
-    protected abstract ServerHttpId serverId(HttpId id);
-
-    public final ServerHttpRequest requestData() throws IOException {
-        HttpRequest request;
+    public final HttpRequest requestData() throws IOException {
         try (ISerializer.Reader fromClient = serializer.newReader(in)) {
-            request = fromClient.read(HttpRequest.class);
+            return fromClient.read(HttpRequest.class);
         }
-        return new ServerHttpRequest(
-            serverId(request.id), request.getCommand(),
-            request.iface, request.method, request.paramTypes, request.params
-        );
     }
 
     public final void write(HttpResult result) throws IOException {
