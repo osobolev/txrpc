@@ -19,6 +19,9 @@ public final class ClientBodyInteraction extends BaseClientBodyInteraction {
 
     protected HttpId wireId(IClientSessionId sessionId, String transactionId) {
         SimpleClientSessionId id = (SimpleClientSessionId) sessionId;
-        return HttpId.create(id == null ? null : id.id, transactionId);
+        return new HttpId(
+            id == null ? null : id.id,
+            transactionId == null ? null : Integer.valueOf(transactionId)
+        );
     }
 }

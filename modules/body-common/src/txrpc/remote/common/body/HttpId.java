@@ -16,8 +16,4 @@ public final class HttpId implements Serializable {
         this.sessionId = sessionId;
         this.transactionId = transactionId;
     }
-
-    public static HttpId create(String sessionId, String transactionId) {
-        return new HttpId(sessionId, transactionId == null ? null : Integer.valueOf(transactionId));
-    }
 }
