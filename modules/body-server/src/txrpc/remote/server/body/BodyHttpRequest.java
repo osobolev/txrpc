@@ -49,7 +49,7 @@ public final class BodyHttpRequest implements IHttpRequest {
             String password = (String) data.params[1];
             return interaction
                 .open(user, password)
-                .map(session -> new HttpDBInterfaceInfo(request.session(id, session.sessionId), session.userObject));
+                .map(session -> new HttpDBInterfaceInfo(request.session(session.sessionId), session.userObject));
         }
         case GET_TRANSACTION: {
             return interaction.beginTransaction(id.sessionId);

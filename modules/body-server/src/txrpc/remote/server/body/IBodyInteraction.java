@@ -10,7 +10,7 @@ public interface IBodyInteraction {
 
     IServerSessionId newSessionId();
 
-    HttpId session(ServerHttpId id, IServerSessionId sessionId);
+    HttpId session(IServerSessionId sessionId);
 
     ServerHttpRequest requestData() throws IOException;
 
