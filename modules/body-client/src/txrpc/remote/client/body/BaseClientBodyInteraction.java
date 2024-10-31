@@ -19,7 +19,7 @@ public abstract class BaseClientBodyInteraction implements TxRpcInteraction<ICli
 
     protected abstract IClientSessionId newSessionId();
 
-    protected abstract IClientSessionId newSessionId(IClientSessionId sessionId, HttpDBInterfaceInfo info);
+    protected abstract IClientSessionId newSessionId(IClientSessionId sessionId, HttpId id);
 
     protected abstract HttpId wireId(IClientSessionId sessionId, String transactionId);
 
@@ -57,7 +57,7 @@ public abstract class BaseClientBodyInteraction implements TxRpcInteraction<ICli
     public final Either<NewSession<IClientSessionId>> open(String user, String password) throws IOException {
         IClientSessionId sessionId = newSessionId();
         return httpInvoke(HttpDBInterfaceInfo.class, sessionId, null, HttpCommand.OPEN, user, password)
-            .map(info -> new NewSession<>(newSessionId(sessionId, info), info.userObject));
+            .map(info -> new NewSession<>(newSessionId(sessionId, info.id), info.userObject));
     }
 
     @Override

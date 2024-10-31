@@ -1,7 +1,6 @@
 package txrpc.remote.client.body;
 
 import txrpc.remote.client.IClientSessionId;
-import txrpc.remote.common.body.HttpDBInterfaceInfo;
 import txrpc.remote.common.body.HttpId;
 
 public final class ClientBodyInteraction extends BaseClientBodyInteraction {
@@ -14,8 +13,8 @@ public final class ClientBodyInteraction extends BaseClientBodyInteraction {
         return null;
     }
 
-    protected IClientSessionId newSessionId(IClientSessionId sessionId, HttpDBInterfaceInfo info) {
-        return new SimpleClientSessionId(info.id.sessionId);
+    protected IClientSessionId newSessionId(IClientSessionId sessionId, HttpId id) {
+        return new SimpleClientSessionId(id.sessionId);
     }
 
     protected HttpId wireId(IClientSessionId sessionId, String transactionId) {
