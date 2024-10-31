@@ -16,7 +16,10 @@ public final class ServerBodyInteraction extends BaseServerBodyInteraction {
 
     @Override
     protected ServerHttpId serverId(HttpId id) {
-        return new ServerHttpId(SimpleServerSessionId.create(id.sessionId), id.transactionId);
+        return new ServerHttpId(
+            SimpleServerSessionId.create(id.sessionId),
+            id.transactionId == null ? null : id.transactionId.toString()
+        );
     }
 
     @Override

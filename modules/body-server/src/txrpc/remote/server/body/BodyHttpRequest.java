@@ -45,7 +45,7 @@ public final class BodyHttpRequest implements IHttpRequest {
     }
 
     private static String transactionId(ServerHttpId id) {
-        return id.transactionId == null ? null : id.transactionId.toString();
+        return id.transactionId;
     }
 
     private Either<?> getResult(TxRpcInteraction<IServerSessionId> interaction) throws IOException {

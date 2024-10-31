@@ -5,9 +5,9 @@ import txrpc.remote.server.IServerSessionId;
 public final class ServerHttpId {
 
     public final IServerSessionId sessionId;
-    public final Integer transactionId;
+    public final String transactionId;
 
-    public ServerHttpId(IServerSessionId sessionId, Integer transactionId) {
+    public ServerHttpId(IServerSessionId sessionId, String transactionId) {
         this.sessionId = sessionId;
         this.transactionId = transactionId;
     }
