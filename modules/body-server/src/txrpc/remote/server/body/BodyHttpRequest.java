@@ -40,8 +40,8 @@ public final class BodyHttpRequest implements IHttpRequest {
 
     private Either<?> getResult(TxRpcInteraction<IServerSessionId> interaction) throws IOException {
         HttpRequest data = request.requestData();
-        HttpId id = data.id;
-        IServerSessionId sessionId = request.sessionId(id);
+        HttpId wireId = data.id;
+        IServerSessionId sessionId = request.sessionId(wireId);
         HttpCommand command = data.getCommand();
         switch (command) {
         case OPEN:
@@ -54,10 +54,10 @@ public final class BodyHttpRequest implements IHttpRequest {
             return interaction.beginTransaction(sessionId);
         case COMMIT:
         case ROLLBACK:
-            return interaction.endTransaction(sessionId, request.transactionId(id), command == HttpCommand.COMMIT);
+            return interaction.endTransaction(sessionId, request.transactionId(wireId), command == HttpCommand.COMMIT);
         case INVOKE:
             Method method = findMethod(data);
-            return interaction.invoke(sessionId, request.transactionId(id), method, data.params);
+            return interaction.invoke(sessionId, request.transactionId(wireId), method, data.params);
         case PING:
             return interaction.ping(sessionId);
         case CLOSE:
