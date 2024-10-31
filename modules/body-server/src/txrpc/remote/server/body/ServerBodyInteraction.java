@@ -20,6 +20,11 @@ public final class ServerBodyInteraction extends BaseServerBodyInteraction {
     }
 
     @Override
+    public Object newSessionWireId(IServerSessionId sessionId) {
+        return new HttpId(sessionId.getId(), null);
+    }
+
+    @Override
     public IServerSessionId sessionId(Object wireId) {
         HttpId id = (HttpId) wireId;
         return SimpleServerSessionId.create(id.sessionId);
@@ -29,10 +34,5 @@ public final class ServerBodyInteraction extends BaseServerBodyInteraction {
     public String transactionId(Object wireId) {
         HttpId id = (HttpId) wireId;
         return id.transactionId == null ? null : id.transactionId.toString();
-    }
-
-    @Override
-    public Object sessionWireId(IServerSessionId sessionId) {
-        return new HttpId(sessionId.getId(), null);
     }
 }
