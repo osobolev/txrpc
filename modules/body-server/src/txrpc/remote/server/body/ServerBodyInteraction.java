@@ -20,13 +20,13 @@ public final class ServerBodyInteraction extends BaseServerBodyInteraction {
     }
 
     @Override
-    public IServerSessionId sessionId(HttpId id) {
-        return SimpleServerSessionId.create(id.sessionId);
+    public IServerSessionId sessionId(HttpId wireId) {
+        return SimpleServerSessionId.create(wireId.sessionId);
     }
 
     @Override
-    public String transactionId(HttpId id) {
-        return id.transactionId == null ? null : id.transactionId.toString();
+    public String transactionId(HttpId wireId) {
+        return wireId.transactionId == null ? null : wireId.transactionId.toString();
     }
 
     @Override

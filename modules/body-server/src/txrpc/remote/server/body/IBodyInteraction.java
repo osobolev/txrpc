@@ -11,9 +11,9 @@ public interface IBodyInteraction {
 
     IServerSessionId newSessionId();
 
-    IServerSessionId sessionId(HttpId id);
+    IServerSessionId sessionId(HttpId wireId);
 
-    String transactionId(HttpId id);
+    String transactionId(HttpId wireId);
 
     HttpId sessionWireId(IServerSessionId sessionId);
 
