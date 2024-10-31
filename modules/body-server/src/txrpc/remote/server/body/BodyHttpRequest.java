@@ -43,6 +43,7 @@ public final class BodyHttpRequest implements IHttpRequest {
     private Either<?> getResult(TxRpcInteraction<IServerSessionId> interaction) throws IOException {
         ServerHttpRequest data = request.requestData();
         ServerHttpId id = data.id;
+        IServerSessionId sessionId = request.sessionId(id);
         HttpCommand command = data.command;
         switch (command) {
         case OPEN: {
@@ -53,20 +54,20 @@ public final class BodyHttpRequest implements IHttpRequest {
                 .map(session -> new HttpDBInterfaceInfo(request.sessionWireId(session.sessionId), session.userObject));
         }
         case GET_TRANSACTION: {
-            return interaction.beginTransaction(id.sessionId);
+            return interaction.beginTransaction(sessionId);
         }
         case COMMIT:
         case ROLLBACK: {
-            return interaction.endTransaction(id.sessionId, id.transactionId, command == HttpCommand.COMMIT);
+            return interaction.endTransaction(sessionId, request.transactionId(id), command == HttpCommand.COMMIT);
         }
         case INVOKE: {
             Method method = findMethod(data);
-            return interaction.invoke(id.sessionId, id.transactionId, method, data.params);
+            return interaction.invoke(sessionId, request.transactionId(id), method, data.params);
         }
         case PING:
-            return interaction.ping(id.sessionId);
+            return interaction.ping(sessionId);
         case CLOSE:
-            return interaction.close(id.sessionId);
+            return interaction.close(sessionId);
         }
         throw new RemoteException("Unknown command");
     }
