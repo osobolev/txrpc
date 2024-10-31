@@ -12,8 +12,6 @@ public interface IBodyInteraction {
 
     HttpId session(ServerHttpId id, IServerSessionId sessionId);
 
-    HttpId transaction(ServerHttpId id, String transactionId);
-
     ServerHttpRequest requestData() throws IOException;
 
     void write(HttpResult result) throws IOException;

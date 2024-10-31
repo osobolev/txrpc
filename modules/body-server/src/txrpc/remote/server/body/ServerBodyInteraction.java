@@ -31,9 +31,4 @@ public final class ServerBodyInteraction extends BaseServerBodyInteraction {
     public HttpId session(ServerHttpId id, IServerSessionId sessionId) {
         return new HttpId(sessionId.getId(), null);
     }
-
-    @Override
-    public HttpId transaction(ServerHttpId id, String transactionId) {
-        return HttpId.create(id.sessionId.getId(), transactionId);
-    }
 }
