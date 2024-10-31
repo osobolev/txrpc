@@ -14,8 +14,8 @@ public final class ClientBodyInteraction extends BaseClientBodyInteraction {
     }
 
     protected IClientSessionId newSessionId(IClientSessionId sessionId, Object wireId) {
-        HttpId id = (HttpId) wireId;
-        return new SimpleClientSessionId(id.sessionId);
+        String id = (String) wireId;
+        return new SimpleClientSessionId(id);
     }
 
     protected Object wireId(IClientSessionId sessionId, String transactionId) {
