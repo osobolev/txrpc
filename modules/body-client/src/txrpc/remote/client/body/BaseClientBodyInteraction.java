@@ -21,7 +21,7 @@ public abstract class BaseClientBodyInteraction implements TxRpcInteraction<ICli
 
     protected abstract IClientSessionId newSessionId(IClientSessionId sessionId, HttpDBInterfaceInfo info);
 
-    protected abstract HttpId id(IClientSessionId sessionId, String transactionId);
+    protected abstract HttpId wireId(IClientSessionId sessionId, String transactionId);
 
     private static Either<Object> serverException(Throwable error) {
         StackTraceElement[] serverST = error.getStackTrace();
@@ -36,7 +36,7 @@ public abstract class BaseClientBodyInteraction implements TxRpcInteraction<ICli
     private Either<Object> httpInvoke(Class<?> retType, IClientSessionId sessionId, String transactionId,
                                       HttpCommand command, Class<? extends IDBCommon> iface, String method,
                                       Class<?>[] paramTypes, Object[] params) throws IOException {
-        HttpId id = id(sessionId, transactionId);
+        HttpId id = wireId(sessionId, transactionId);
         HttpRequest request = new HttpRequest(id, command, iface, method, paramTypes, params);
         HttpResult result = client.call(retType, sessionId, request);
         Throwable error = result.error;
