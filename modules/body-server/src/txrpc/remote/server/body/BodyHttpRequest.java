@@ -44,24 +44,20 @@ public final class BodyHttpRequest implements IHttpRequest {
         IServerSessionId sessionId = request.sessionId(id);
         HttpCommand command = data.getCommand();
         switch (command) {
-        case OPEN: {
+        case OPEN:
             String user = (String) data.params[0];
             String password = (String) data.params[1];
             return interaction
                 .open(user, password)
                 .map(session -> new HttpDBInterfaceInfo(request.sessionWireId(session.sessionId), session.userObject));
-        }
-        case GET_TRANSACTION: {
+        case GET_TRANSACTION:
             return interaction.beginTransaction(sessionId);
-        }
         case COMMIT:
-        case ROLLBACK: {
+        case ROLLBACK:
             return interaction.endTransaction(sessionId, request.transactionId(id), command == HttpCommand.COMMIT);
-        }
-        case INVOKE: {
+        case INVOKE:
             Method method = findMethod(data);
             return interaction.invoke(sessionId, request.transactionId(id), method, data.params);
-        }
         case PING:
             return interaction.ping(sessionId);
         case CLOSE:
