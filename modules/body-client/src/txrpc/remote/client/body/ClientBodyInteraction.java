@@ -13,8 +13,8 @@ public final class ClientBodyInteraction extends BaseClientBodyInteraction {
         return null;
     }
 
-    protected IClientSessionId newSessionId(IClientSessionId sessionId, Object wireId) {
-        String id = (String) wireId;
+    protected IClientSessionId newSessionId(IClientSessionId sessionId, Object newSessionWireId) {
+        String id = (String) newSessionWireId;
         return new SimpleClientSessionId(id);
     }
 
