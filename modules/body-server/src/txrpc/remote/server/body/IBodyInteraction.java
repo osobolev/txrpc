@@ -1,6 +1,5 @@
 package txrpc.remote.server.body;
 
-import txrpc.remote.common.body.HttpId;
 import txrpc.remote.common.body.HttpRequest;
 import txrpc.remote.common.body.HttpResult;
 import txrpc.remote.server.IServerSessionId;
@@ -11,11 +10,11 @@ public interface IBodyInteraction {
 
     IServerSessionId newSessionId();
 
-    IServerSessionId sessionId(HttpId wireId);
+    IServerSessionId sessionId(Object wireId);
 
-    String transactionId(HttpId wireId);
+    String transactionId(Object wireId);
 
-    HttpId sessionWireId(IServerSessionId sessionId);
+    Object sessionWireId(IServerSessionId sessionId);
 
     HttpRequest requestData() throws IOException;
 

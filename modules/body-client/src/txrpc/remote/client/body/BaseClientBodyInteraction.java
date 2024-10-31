@@ -4,7 +4,10 @@ import txrpc.api.IDBCommon;
 import txrpc.remote.client.IClientSessionId;
 import txrpc.remote.common.Either;
 import txrpc.remote.common.TxRpcInteraction;
-import txrpc.remote.common.body.*;
+import txrpc.remote.common.body.HttpCommand;
+import txrpc.remote.common.body.HttpDBInterfaceInfo;
+import txrpc.remote.common.body.HttpRequest;
+import txrpc.remote.common.body.HttpResult;
 
 import java.io.IOException;
 import java.lang.reflect.Method;
@@ -19,9 +22,9 @@ public abstract class BaseClientBodyInteraction implements TxRpcInteraction<ICli
 
     protected abstract IClientSessionId newSessionId();
 
-    protected abstract IClientSessionId newSessionId(IClientSessionId sessionId, HttpId wireId);
+    protected abstract IClientSessionId newSessionId(IClientSessionId sessionId, Object wireId);
 
-    protected abstract HttpId wireId(IClientSessionId sessionId, String transactionId);
+    protected abstract Object wireId(IClientSessionId sessionId, String transactionId);
 
     private static Either<Object> serverException(Throwable error) {
         StackTraceElement[] serverST = error.getStackTrace();
@@ -36,7 +39,7 @@ public abstract class BaseClientBodyInteraction implements TxRpcInteraction<ICli
     private Either<Object> httpInvoke(Class<?> retType, IClientSessionId sessionId, String transactionId,
                                       HttpCommand command, Class<? extends IDBCommon> iface, String method,
                                       Class<?>[] paramTypes, Object[] params) throws IOException {
-        HttpId id = wireId(sessionId, transactionId);
+        Object id = wireId(sessionId, transactionId);
         HttpRequest request = new HttpRequest(id, command, iface, method, paramTypes, params);
         HttpResult result = client.call(retType, sessionId, request);
         Throwable error = result.error;

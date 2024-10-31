@@ -3,7 +3,10 @@ package txrpc.remote.server.body;
 import txrpc.remote.common.Either;
 import txrpc.remote.common.RemoteException;
 import txrpc.remote.common.TxRpcInteraction;
-import txrpc.remote.common.body.*;
+import txrpc.remote.common.body.HttpCommand;
+import txrpc.remote.common.body.HttpDBInterfaceInfo;
+import txrpc.remote.common.body.HttpRequest;
+import txrpc.remote.common.body.HttpResult;
 import txrpc.remote.server.IHttpRequest;
 import txrpc.remote.server.IServerSessionId;
 
@@ -40,7 +43,7 @@ public final class BodyHttpRequest implements IHttpRequest {
 
     private Either<?> getResult(TxRpcInteraction<IServerSessionId> interaction) throws IOException {
         HttpRequest data = request.requestData();
-        HttpId wireId = data.id;
+        Object wireId = data.id;
         IServerSessionId sessionId = request.sessionId(wireId);
         HttpCommand command = data.getCommand();
         switch (command) {
