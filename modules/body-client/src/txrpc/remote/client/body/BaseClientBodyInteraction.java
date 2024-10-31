@@ -19,7 +19,7 @@ public abstract class BaseClientBodyInteraction implements TxRpcInteraction<ICli
 
     protected abstract IClientSessionId newSessionId();
 
-    protected abstract IClientSessionId newSessionId(IClientSessionId sessionId, HttpId id);
+    protected abstract IClientSessionId newSessionId(IClientSessionId sessionId, HttpId wireId);
 
     protected abstract HttpId wireId(IClientSessionId sessionId, String transactionId);
 
