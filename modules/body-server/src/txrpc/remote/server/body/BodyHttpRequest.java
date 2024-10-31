@@ -40,14 +40,6 @@ public final class BodyHttpRequest implements IHttpRequest {
         }
     }
 
-    private static IServerSessionId sessionId(ServerHttpId id) {
-        return id.sessionId;
-    }
-
-    private static String transactionId(ServerHttpId id) {
-        return id.transactionId;
-    }
-
     private Either<?> getResult(TxRpcInteraction<IServerSessionId> interaction) throws IOException {
         ServerHttpRequest data = request.requestData();
         ServerHttpId id = data.id;
@@ -61,23 +53,21 @@ public final class BodyHttpRequest implements IHttpRequest {
         }
         case GET_TRANSACTION: {
             return interaction
-                .beginTransaction(sessionId(id))
+                .beginTransaction(id.sessionId)
                 .map(transactionId -> request.transaction(id, transactionId));
         }
         case COMMIT:
         case ROLLBACK: {
-            String transactionId = transactionId(id);
-            return interaction.endTransaction(sessionId(id), transactionId, data.command == HttpCommand.COMMIT);
+            return interaction.endTransaction(id.sessionId, id.transactionId, data.command == HttpCommand.COMMIT);
         }
         case INVOKE: {
-            String transactionId = transactionId(id);
             Method method = findMethod(data);
-            return interaction.invoke(sessionId(id), transactionId, method, data.params);
+            return interaction.invoke(id.sessionId, id.transactionId, method, data.params);
         }
         case PING:
-            return interaction.ping(sessionId(id));
+            return interaction.ping(id.sessionId);
         case CLOSE:
-            return interaction.close(sessionId(id));
+            return interaction.close(id.sessionId);
         }
         throw new RemoteException("Unknown command");
     }
