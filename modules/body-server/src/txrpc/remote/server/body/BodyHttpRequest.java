@@ -52,9 +52,7 @@ public final class BodyHttpRequest implements IHttpRequest {
                 .map(session -> new HttpDBInterfaceInfo(request.session(id, session.sessionId), session.userObject));
         }
         case GET_TRANSACTION: {
-            return interaction
-                .beginTransaction(id.sessionId)
-                .map(transactionId -> request.transaction(id, transactionId));
+            return interaction.beginTransaction(id.sessionId);
         }
         case COMMIT:
         case ROLLBACK: {

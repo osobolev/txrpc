@@ -62,8 +62,7 @@ public abstract class BaseClientBodyInteraction implements TxRpcInteraction<ICli
 
     @Override
     public final Either<String> beginTransaction(IClientSessionId sessionId) throws IOException {
-        return httpInvoke(HttpId.class, sessionId, null, HttpCommand.GET_TRANSACTION)
-            .map(tid -> tid.transactionId.toString());
+        return httpInvoke(String.class, sessionId, null, HttpCommand.GET_TRANSACTION);
     }
 
     @Override
