@@ -17,7 +17,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.atomic.AtomicLong;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * Server-side object for HTTP access to business interfaces.
@@ -38,6 +38,7 @@ public final class HttpDispatcher {
 
         final IServerSessionId sessionId;
         final DBInterface db;
+        final AtomicInteger transactionCount = new AtomicInteger(0);
         final ConcurrentMap<String, ITransaction> transactions = new ConcurrentHashMap<>();
 
         DBWrapper(IServerSessionId sessionId, DBInterface db) {
@@ -55,7 +56,6 @@ public final class HttpDispatcher {
     }
 
     private final Map<String, DBWrapper> connectionMap = new HashMap<>();
-    private final AtomicLong transactionCount = new AtomicLong(0);
 
     public HttpDispatcher(SessionFactory sessionFactory, TxRpcLogger logger, TxRpcGlobalContext global) {
         this.lw = new LocalConnectionFactory(sessionFactory, logger, global, true);
@@ -131,7 +131,7 @@ public final class HttpDispatcher {
             public Either<String> beginTransaction(IServerSessionId sessionId) {
                 DBWrapper db = getSession(sessionId);
                 ITransaction trans = db.db.getTransaction();
-                String transactionId = String.valueOf(transactionCount.getAndIncrement());
+                String transactionId = String.valueOf(db.transactionCount.getAndIncrement());
                 db.transactions.put(transactionId, trans);
                 return Either.ok(transactionId);
             }

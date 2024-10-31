@@ -12,7 +12,7 @@ public interface IBodyInteraction {
 
     HttpId session(ServerHttpId id, IServerSessionId sessionId);
 
-    HttpId transaction(ServerHttpId id, long transactionId);
+    HttpId transaction(ServerHttpId id, String transactionId);
 
     ServerHttpRequest requestData() throws IOException;
 

@@ -20,6 +20,6 @@ public final class ClientBodyInteraction extends BaseClientBodyInteraction {
 
     protected HttpId id(IClientSessionId sessionId, String transactionId) {
         SimpleClientSessionId id = (SimpleClientSessionId) sessionId;
-        return new HttpId(id == null ? null : id.id, transactionId == null ? null : Long.valueOf(transactionId));
+        return new HttpId(id == null ? null : id.id, transactionId == null ? null : Integer.valueOf(transactionId));
     }
 }

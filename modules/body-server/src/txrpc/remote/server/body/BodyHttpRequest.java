@@ -62,7 +62,7 @@ public final class BodyHttpRequest implements IHttpRequest {
         case GET_TRANSACTION: {
             return interaction
                 .beginTransaction(sessionId(id))
-                .map(transactionId -> request.transaction(id, Long.parseLong(transactionId)));
+                .map(transactionId -> request.transaction(id, transactionId));
         }
         case COMMIT:
         case ROLLBACK: {

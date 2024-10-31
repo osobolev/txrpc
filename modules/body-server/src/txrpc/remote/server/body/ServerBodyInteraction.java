@@ -30,7 +30,7 @@ public final class ServerBodyInteraction extends BaseServerBodyInteraction {
     }
 
     @Override
-    public HttpId transaction(ServerHttpId id, long transactionId) {
-        return new HttpId(id.sessionId.getId(), transactionId);
+    public HttpId transaction(ServerHttpId id, String transactionId) {
+        return new HttpId(id.sessionId.getId(), transactionId == null ? null : Integer.valueOf(transactionId));
     }
 }
