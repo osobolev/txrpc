@@ -28,7 +28,7 @@ public final class ServerBodyInteraction extends BaseServerBodyInteraction {
     }
 
     @Override
-    public HttpId session(IServerSessionId sessionId) {
+    public HttpId sessionWireId(IServerSessionId sessionId) {
         return new HttpId(sessionId.getId(), null);
     }
 }
