@@ -43,7 +43,8 @@ public final class BodyHttpRequest implements IHttpRequest {
     private Either<?> getResult(TxRpcInteraction<IServerSessionId> interaction) throws IOException {
         ServerHttpRequest data = request.requestData();
         ServerHttpId id = data.id;
-        switch (data.command) {
+        HttpCommand command = data.command;
+        switch (command) {
         case OPEN: {
             String user = (String) data.params[0];
             String password = (String) data.params[1];
@@ -56,7 +57,7 @@ public final class BodyHttpRequest implements IHttpRequest {
         }
         case COMMIT:
         case ROLLBACK: {
-            return interaction.endTransaction(id.sessionId, id.transactionId, data.command == HttpCommand.COMMIT);
+            return interaction.endTransaction(id.sessionId, id.transactionId, command == HttpCommand.COMMIT);
         }
         case INVOKE: {
             Method method = findMethod(data);
