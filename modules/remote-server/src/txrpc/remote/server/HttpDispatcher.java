@@ -175,7 +175,6 @@ public final class HttpDispatcher {
             @Override
             public Either<Object> invoke(IServerSessionId sessionId, String transactionId, Method method, Object[] args) {
                 DBWrapper db = getSession(sessionId);
-                Class<? extends IDBCommon> iface = (Class<? extends IDBCommon>) method.getDeclaringClass();
                 ISimpleTransaction t;
                 if (transactionId != null) {
                     ITransaction transaction = db.transactions.get(transactionId);
@@ -185,6 +184,7 @@ public final class HttpDispatcher {
                 } else {
                     t = db.db.getSimpleTransaction();
                 }
+                Class<? extends IDBCommon> iface = (Class<? extends IDBCommon>) method.getDeclaringClass();
                 Object impl = t.getInterface(iface);
                 try {
                     Object result = method.invoke(impl, args);
