@@ -20,7 +20,7 @@ public final class BodyHttpRequest extends BaseBodyHttpRequest {
     }
 
     @Override
-    protected Object newSessionWireId(IServerSessionId sessionId) {
+    protected String newSessionWireId(IServerSessionId sessionId) {
         return sessionId.getId();
     }
 
