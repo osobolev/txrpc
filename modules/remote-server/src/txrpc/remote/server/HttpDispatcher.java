@@ -13,8 +13,7 @@ import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.sql.SQLException;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -45,11 +44,7 @@ public final class HttpDispatcher {
         }
 
         boolean isTimedOut(long time) {
-            boolean timeout = time - db.getLastActive() >= WatcherThread.ACTIVITY_CHECK_INTERVAL;
-            if (timeout) {
-                db.close(false);
-            }
-            return timeout;
+            return time - db.getLastActive() >= WatcherThread.ACTIVITY_CHECK_INTERVAL;
         }
     }
 
@@ -83,8 +78,28 @@ public final class HttpDispatcher {
 
     private void checkActivity() {
         long time = DBInterface.getCurrentTime();
+        List<DBWrapper> toClose = null;
         synchronized (connectionMap) {
-            connectionMap.values().removeIf(db -> db.isTimedOut(time));
+            Iterator<DBWrapper> it = connectionMap.values().iterator();
+            while (it.hasNext()) {
+                DBWrapper db = it.next();
+                if (db.isTimedOut(time)) {
+                    if (toClose == null) {
+                        toClose = new ArrayList<>();
+                    }
+                    toClose.add(db);
+                    it.remove();
+                }
+            }
+        }
+        if (toClose != null) {
+            for (DBWrapper db : toClose) {
+                try {
+                    db.db.close(false);
+                } catch (Throwable ex) {
+                    log(ex);
+                }
+            }
         }
     }
 
