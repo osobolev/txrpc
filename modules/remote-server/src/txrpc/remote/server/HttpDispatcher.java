@@ -56,6 +56,10 @@ public final class HttpDispatcher {
         this.watcher.runThread();
     }
 
+    private void log(Throwable ex) {
+        lw.logger.error(ex);
+    }
+
     private void putConnection(IServerSessionId sessionId, DBWrapper db) {
         synchronized (connectionMap) {
             connectionMap.put(sessionId.getId(), db);
@@ -101,10 +105,6 @@ public final class HttpDispatcher {
                 }
             }
         }
-    }
-
-    private void log(Throwable ex) {
-        lw.logger.error(ex);
     }
 
     private TxRpcInteraction<IServerSessionId> getInteraction(IHttpRequest request) {
