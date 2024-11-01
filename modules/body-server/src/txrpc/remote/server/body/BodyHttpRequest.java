@@ -1,82 +1,38 @@
 package txrpc.remote.server.body;
 
-import txrpc.remote.common.Either;
-import txrpc.remote.common.RemoteException;
-import txrpc.remote.common.TxRpcInteraction;
-import txrpc.remote.common.body.HttpCommand;
-import txrpc.remote.common.body.HttpDBInterfaceInfo;
-import txrpc.remote.common.body.HttpRequest;
-import txrpc.remote.common.body.HttpResult;
-import txrpc.remote.server.IHttpRequest;
+import txrpc.remote.common.body.HttpId;
+import txrpc.remote.common.body.ISerializer;
 import txrpc.remote.server.IServerSessionId;
 
-import java.io.IOException;
-import java.lang.reflect.Method;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.util.UUID;
 
-public final class BodyHttpRequest implements IHttpRequest {
+public final class BodyHttpRequest extends BaseBodyHttpRequest {
 
-    private final String hostName;
-    private final IBodyInteraction request;
-
-    public BodyHttpRequest(String hostName, IBodyInteraction request) {
-        this.hostName = hostName;
-        this.request = request;
-    }
-
-    @Override
-    public String hostName() {
-        return hostName;
+    public BodyHttpRequest(ISerializer serializer, String hostName, InputStream in, OutputStream out) {
+        super(serializer, hostName, in, out);
     }
 
     @Override
     public IServerSessionId newSessionId() {
-        return request.newSessionId();
-    }
-
-    private static Method findMethod(HttpRequest data) {
-        try {
-            return data.iface.getMethod(data.method, data.paramTypes);
-        } catch (Throwable ex) {
-            throw new RemoteException("Method not found");
-        }
-    }
-
-    private Either<?> getResult(TxRpcInteraction<IServerSessionId> interaction) throws IOException {
-        HttpRequest data = request.requestData();
-        Object wireId = data.id;
-        IServerSessionId sessionId = request.sessionId(wireId);
-        HttpCommand command = data.getCommand();
-        switch (command) {
-        case OPEN:
-            String user = (String) data.params[0];
-            String password = (String) data.params[1];
-            return interaction
-                .open(user, password)
-                .map(session -> new HttpDBInterfaceInfo(request.newSessionWireId(session.sessionId), session.userObject));
-        case GET_TRANSACTION:
-            return interaction.beginTransaction(sessionId);
-        case COMMIT:
-        case ROLLBACK:
-            return interaction.endTransaction(sessionId, request.transactionId(wireId), command == HttpCommand.COMMIT);
-        case INVOKE:
-            Method method = findMethod(data);
-            return interaction.invoke(sessionId, request.transactionId(wireId), method, data.params);
-        case PING:
-            return interaction.ping(sessionId);
-        case CLOSE:
-            return interaction.close(sessionId);
-        }
-        throw new RemoteException("Unknown command");
+        return SimpleServerSessionId.create(UUID.randomUUID().toString());
     }
 
     @Override
-    public void perform(TxRpcInteraction<IServerSessionId> interaction) throws IOException {
-        Either<?> result = getResult(interaction);
-        request.write(new HttpResult(result.getResult(), result.getError()));
+    protected Object newSessionWireId(IServerSessionId sessionId) {
+        return sessionId.getId();
     }
 
     @Override
-    public void writeError(Throwable error) throws IOException {
-        request.write(new HttpResult(null, error));
+    protected IServerSessionId sessionId(Object wireId) {
+        HttpId id = (HttpId) wireId;
+        return SimpleServerSessionId.create(id.sessionId);
+    }
+
+    @Override
+    protected String transactionId(Object wireId) {
+        HttpId id = (HttpId) wireId;
+        return id.transactionId == null ? null : id.transactionId.toString();
     }
 }
