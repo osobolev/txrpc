@@ -9,15 +9,18 @@ public final class ClientBodyInteraction extends BaseClientBodyInteraction {
         super(client);
     }
 
+    @Override
     protected IClientSessionId newSessionId() {
         return null;
     }
 
+    @Override
     protected IClientSessionId newSessionId(IClientSessionId sessionId, Object newSessionWireId) {
         String id = (String) newSessionWireId;
         return new SimpleClientSessionId(id);
     }
 
+    @Override
     protected HttpId wireId(IClientSessionId sessionId, String transactionId) {
         SimpleClientSessionId id = (SimpleClientSessionId) sessionId;
         return new HttpId(

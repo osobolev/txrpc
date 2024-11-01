@@ -37,10 +37,12 @@ final class DBInterface implements IRemoteDBInterface {
         return server ? "connection" : "local connection";
     }
 
+    @Override
     public ISimpleTransaction getSimpleTransaction() {
         return new SimpleTransaction(global, session);
     }
 
+    @Override
     public ITransaction getTransaction() {
         return new Transaction(global, session);
     }
@@ -53,6 +55,7 @@ final class DBInterface implements IRemoteDBInterface {
         return lastActive.get();
     }
 
+    @Override
     public void ping() {
         lastActive.set(getCurrentTime());
     }
@@ -73,10 +76,12 @@ final class DBInterface implements IRemoteDBInterface {
         global.fireSessionListeners(listener -> listener.closed(sessionOrderId));
     }
 
+    @Override
     public void close() {
         close(true);
     }
 
+    @Override
     public Object getUserObject() {
         return session.getUserObject();
     }

@@ -77,6 +77,7 @@ public final class SafeDBInterface implements IRemoteDBInterface {
         }
     }
 
+    @Override
     public ISimpleTransaction getSimpleTransaction() throws SQLException {
         if (producer == null) {
             return createSimpleTransaction();
@@ -85,6 +86,7 @@ public final class SafeDBInterface implements IRemoteDBInterface {
         }
     }
 
+    @Override
     public ITransaction getTransaction() throws SQLException {
         try {
             return getDb().getTransaction();
@@ -95,6 +97,7 @@ public final class SafeDBInterface implements IRemoteDBInterface {
         }
     }
 
+    @Override
     public void ping() {
         try {
             getDb().ping();
@@ -105,6 +108,7 @@ public final class SafeDBInterface implements IRemoteDBInterface {
         }
     }
 
+    @Override
     public void close() throws SQLException {
         watcher.shutdown();
         synchronized (dbLock) {
@@ -115,6 +119,7 @@ public final class SafeDBInterface implements IRemoteDBInterface {
         }
     }
 
+    @Override
     public Object getUserObject() {
         try {
             return getDb().getUserObject();

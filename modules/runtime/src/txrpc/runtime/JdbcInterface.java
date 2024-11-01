@@ -25,6 +25,7 @@ public final class JdbcInterface implements ISimpleTransaction {
         this.commitCalls = commitCalls;
     }
 
+    @Override
     public <T extends IDBCommon> T getInterface(Class<T> iface) {
         return transaction.getInterface(iface, commitCalls);
     }

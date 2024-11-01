@@ -35,6 +35,7 @@ final class SafeSimpleTransaction implements ISimpleTransaction {
         }
     }
 
+    @Override
     public <T extends IDBCommon> T getInterface(Class<T> iface) {
         return db.wrap(iface, new SafeWrapper<>(iface, db, this));
     }

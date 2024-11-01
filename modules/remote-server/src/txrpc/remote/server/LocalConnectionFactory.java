@@ -50,6 +50,7 @@ public final class LocalConnectionFactory implements IConnectionFactory {
         return result;
     }
 
+    @Override
     public IRemoteDBInterface openConnection(String user, String password) throws SQLException {
         return openConnection(user, password, null, Function.identity());
     }

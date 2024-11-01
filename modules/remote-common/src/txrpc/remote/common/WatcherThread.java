@@ -19,6 +19,7 @@ public final class WatcherThread implements Runnable {
         this.check = check;
     }
 
+    @Override
     public void run() {
         while (true) {
             synchronized (waitLock) {

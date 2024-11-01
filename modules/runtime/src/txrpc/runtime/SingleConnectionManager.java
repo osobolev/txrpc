@@ -45,6 +45,7 @@ public class SingleConnectionManager implements ConnectionManager {
         return openConnection(null, url, user, pass);
     }
 
+    @Override
     public Connection allocConnection() throws SQLException {
         synchronized (lock) {
             while (allocated) {
@@ -60,6 +61,7 @@ public class SingleConnectionManager implements ConnectionManager {
         return conn;
     }
 
+    @Override
     public void releaseConnection(Connection conn) {
         synchronized (lock) {
             this.allocated = false;
@@ -67,14 +69,17 @@ public class SingleConnectionManager implements ConnectionManager {
         }
     }
 
+    @Override
     public void commit(Connection conn) throws SQLException {
         conn.commit();
     }
 
+    @Override
     public void rollback(Connection conn) throws SQLException {
         conn.rollback();
     }
 
+    @Override
     public void close() throws SQLException {
         conn.close();
     }

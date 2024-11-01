@@ -24,5 +24,6 @@ public interface IDBInterface extends AutoCloseable {
     /**
      * Closes DB connection.
      */
+    @Override
     void close() throws SQLException;
 }

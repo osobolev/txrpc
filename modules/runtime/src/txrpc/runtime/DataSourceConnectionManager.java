@@ -17,10 +17,12 @@ public class DataSourceConnectionManager implements ConnectionManager {
         this.dataSource = dataSource;
     }
 
+    @Override
     public Connection allocConnection() throws SQLException {
         return dataSource.getConnection();
     }
 
+    @Override
     public void releaseConnection(Connection conn) throws SQLException {
         conn.close();
     }
@@ -28,15 +30,18 @@ public class DataSourceConnectionManager implements ConnectionManager {
     /**
      * Does nothing. Override if you do not use container-managed transactions.
      */
+    @Override
     public void commit(Connection conn) throws SQLException {
     }
 
     /**
      * Does nothing. Override if you do not use container-managed transactions.
      */
+    @Override
     public void rollback(Connection conn) throws SQLException {
     }
 
+    @Override
     public void close() {
     }
 }
