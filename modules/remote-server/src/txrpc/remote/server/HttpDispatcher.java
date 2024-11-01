@@ -36,13 +36,11 @@ public final class HttpDispatcher {
 
     private static final class DBWrapper {
 
-        final IServerSessionId sessionId;
         final DBInterface db;
         final AtomicInteger transactionCount = new AtomicInteger(0);
         final ConcurrentMap<String, ITransaction> transactions = new ConcurrentHashMap<>();
 
-        DBWrapper(IServerSessionId sessionId, DBInterface db) {
-            this.sessionId = sessionId;
+        DBWrapper(DBInterface db) {
             this.db = db;
         }
 
@@ -111,16 +109,15 @@ public final class HttpDispatcher {
             @Override
             public Either<NewSession<IServerSessionId>> open(String user, String password) {
                 try {
-                    DBWrapper dbw = lw.openConnection(
+                    NewSession<IServerSessionId> session = lw.openConnection(
                         user, password, request.hostName(),
                         db -> {
                             IServerSessionId id = request.newSessionId();
-                            DBWrapper wrapper = new DBWrapper(id, db);
-                            putConnection(id, wrapper);
-                            return wrapper;
+                            putConnection(id, new DBWrapper(db));
+                            return new NewSession<>(id, db.getUserObject());
                         }
                     );
-                    return Either.ok(new NewSession<>(dbw.sessionId, dbw.db.getUserObject()));
+                    return Either.ok(session);
                 } catch (SQLException ex) {
                     log(ex);
                     return Either.error(ex);
@@ -203,7 +200,7 @@ public final class HttpDispatcher {
             public Either<Void> close(IServerSessionId sessionId) {
                 DBWrapper db = getSession(sessionId);
                 db.db.close();
-                endSession(db.sessionId);
+                endSession(sessionId);
                 return Either.ok(null);
             }
         };
