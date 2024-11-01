@@ -161,16 +161,16 @@ public final class HttpDispatcher {
             public Either<Object> invoke(IServerSessionId sessionId, String transactionId, Method method, Object[] args) {
                 DBWrapper db = getSession(sessionId);
                 Class<? extends IDBCommon> iface = (Class<? extends IDBCommon>) method.getDeclaringClass();
-                Object impl;
+                ISimpleTransaction t;
                 if (transactionId != null) {
                     ITransaction transaction = db.transactions.get(transactionId);
                     if (transaction == null)
                         throw new RemoteException("Transaction inactive: " + transactionId);
-                    impl = transaction.getInterface(iface);
+                    t = transaction;
                 } else {
-                    ISimpleTransaction t = db.db.getSimpleTransaction();
-                    impl = t.getInterface(iface);
+                    t = db.db.getSimpleTransaction();
                 }
+                Object impl = t.getInterface(iface);
                 try {
                     Object result = method.invoke(impl, args);
                     return Either.ok(result);
