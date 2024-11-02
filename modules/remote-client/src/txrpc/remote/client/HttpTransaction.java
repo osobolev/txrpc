@@ -24,7 +24,7 @@ final class HttpTransaction extends HttpSimpleTransaction implements ITransactio
     @Override
     public void rollback() throws SQLException {
         try {
-            interaction.endTransaction(sessionId, transactionId, true).rethrow(SQLException.class);
+            interaction.endTransaction(sessionId, transactionId, false).rethrow(SQLException.class);
         } catch (IOException ex) {
             throw new RemoteException(ex);
         }
@@ -33,7 +33,7 @@ final class HttpTransaction extends HttpSimpleTransaction implements ITransactio
     @Override
     public void commit() throws SQLException {
         try {
-            interaction.endTransaction(sessionId, transactionId, false).rethrow(SQLException.class);
+            interaction.endTransaction(sessionId, transactionId, true).rethrow(SQLException.class);
         } catch (IOException ex) {
             throw new RemoteException(ex);
         }
