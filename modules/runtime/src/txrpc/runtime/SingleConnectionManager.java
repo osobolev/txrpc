@@ -3,6 +3,7 @@ package txrpc.runtime;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
+import java.util.concurrent.Semaphore;
 
 /**
  * Single-connection implementation of {@link ConnectionManager}.
@@ -12,8 +13,7 @@ import java.sql.SQLException;
 public class SingleConnectionManager implements ConnectionManager {
 
     private final Connection conn;
-    private final Object lock = new Object();
-    private boolean allocated = false;
+    private final Semaphore available = new Semaphore(1);
 
     public SingleConnectionManager(Connection conn) {
         this.conn = conn;
@@ -47,26 +47,18 @@ public class SingleConnectionManager implements ConnectionManager {
 
     @Override
     public Connection allocConnection() throws SQLException {
-        synchronized (lock) {
-            while (allocated) {
-                try {
-                    lock.wait();
-                } catch (InterruptedException ex) {
-                    Thread.currentThread().interrupt();
-                    throw new SQLException(ex);
-                }
-            }
-            this.allocated = true;
+        try {
+            available.acquire();
+        } catch (InterruptedException ex) {
+            Thread.currentThread().interrupt();
+            throw new SQLException(ex);
         }
         return conn;
     }
 
     @Override
     public void releaseConnection(Connection conn) {
-        synchronized (lock) {
-            this.allocated = false;
-            lock.notifyAll();
-        }
+        available.release();
     }
 
     @Override
