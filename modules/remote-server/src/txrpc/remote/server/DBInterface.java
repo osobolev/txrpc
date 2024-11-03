@@ -9,7 +9,6 @@ import txrpc.runtime.Transaction;
 import txrpc.runtime.TxRpcGlobalContext;
 
 import java.sql.SQLException;
-import java.util.concurrent.atomic.AtomicLong;
 
 final class DBInterface implements IRemoteDBInterface {
 
@@ -18,8 +17,6 @@ final class DBInterface implements IRemoteDBInterface {
     private final TxRpcLogger logger;
     private final boolean server;
     private final long sessionOrderId;
-
-    private final AtomicLong lastActive = new AtomicLong(getCurrentTime());
 
     DBInterface(SessionContext session, TxRpcGlobalContext global, TxRpcLogger logger,
                 long sessionOrderId, boolean server) {
@@ -47,17 +44,8 @@ final class DBInterface implements IRemoteDBInterface {
         return new Transaction(global, session);
     }
 
-    static long getCurrentTime() {
-        return System.currentTimeMillis();
-    }
-
-    long getLastActive() {
-        return lastActive.get();
-    }
-
     @Override
     public void ping() {
-        lastActive.set(getCurrentTime());
     }
 
     void close(boolean explicit) {

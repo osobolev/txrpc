@@ -17,6 +17,7 @@ import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * Server-side object for HTTP access to business interfaces.
@@ -38,13 +39,18 @@ public final class HttpDispatcher {
         final DBInterface db;
         final AtomicInteger transactionCount = new AtomicInteger(0);
         final ConcurrentMap<String, ITransaction> transactions = new ConcurrentHashMap<>();
+        final AtomicLong lastActive = new AtomicLong(getCurrentTime());
 
         DBWrapper(DBInterface db) {
             this.db = db;
         }
 
+        void ping() {
+            lastActive.set(getCurrentTime());
+        }
+
         boolean isTimedOut(long time) {
-            return time - db.getLastActive() >= WatcherThread.ACTIVITY_CHECK_INTERVAL;
+            return time - lastActive.get() >= WatcherThread.ACTIVITY_CHECK_INTERVAL;
         }
     }
 
@@ -54,6 +60,10 @@ public final class HttpDispatcher {
         this.lw = new LocalConnectionFactory(sessionFactory, logger, global, true);
         this.watcher = new WatcherThread(1, this::checkActivity);
         this.watcher.runThread();
+    }
+
+    private static long getCurrentTime() {
+        return System.currentTimeMillis();
     }
 
     private void log(Throwable ex) {
@@ -81,7 +91,7 @@ public final class HttpDispatcher {
     }
 
     private void checkActivity() {
-        long time = DBInterface.getCurrentTime();
+        long time = getCurrentTime();
         List<DBWrapper> toClose = null;
         synchronized (connectionMap) {
             Iterator<DBWrapper> it = connectionMap.values().iterator();
@@ -203,7 +213,7 @@ public final class HttpDispatcher {
             public Either<Void> ping(IServerSessionId sessionId) {
                 DBWrapper db = maybeSession(sessionId);
                 if (db != null) {
-                    db.db.ping();
+                    db.ping();
                     if (LocalConnectionFactory.TRACE) {
                         lw.logger.trace(":: Ping from " + request.hostName());
                     }
