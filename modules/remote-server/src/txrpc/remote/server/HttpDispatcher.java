@@ -92,7 +92,7 @@ public final class HttpDispatcher {
 
     private void checkActivity() {
         long time = getCurrentTime();
-        List<DBWrapper> toClose = null;
+        List<DBInterface> toClose = null;
         synchronized (connectionMap) {
             Iterator<DBWrapper> it = connectionMap.values().iterator();
             while (it.hasNext()) {
@@ -101,18 +101,18 @@ public final class HttpDispatcher {
                     if (toClose == null) {
                         toClose = new ArrayList<>();
                     }
-                    toClose.add(db);
+                    toClose.add(db.db);
                     it.remove();
                 }
             }
         }
         if (toClose != null) {
-            for (DBWrapper db : toClose) {
+            for (DBInterface db : toClose) {
                 if (LocalConnectionFactory.TRACE) {
-                    lw.logger.info("Closing inactive connection");
+                    lw.logger.info("Closing inactive " + db.getConnectionName());
                 }
                 try {
-                    db.db.doClose();
+                    db.doClose();
                 } catch (Throwable ex) {
                     log(ex);
                 }
