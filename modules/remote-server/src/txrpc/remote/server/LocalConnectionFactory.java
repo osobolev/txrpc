@@ -7,7 +7,6 @@ import txrpc.runtime.TxRpcGlobalContext;
 
 import java.sql.SQLException;
 import java.util.concurrent.atomic.AtomicLong;
-import java.util.function.Function;
 
 /**
  * {@link IConnectionFactory} implementation for local connection.
@@ -31,18 +30,25 @@ public final class LocalConnectionFactory implements IConnectionFactory {
         this.global = global;
     }
 
-    <T> T openConnection(String user, String password, String host, boolean server,
-                         Function<DBInterface, T> onCreate) throws SQLException {
+    interface DBInterfaceFactory<T> {
+
+        T create(SessionContext session, long sessionOrderId);
+    }
+
+    <T> T openConnection(String user, String password, String host,
+                         DBInterfaceFactory<T> factory) throws SQLException {
         long sessionOrderId = connectionCount.getAndIncrement();
         SessionContext session = sessionFactory.login(logger, sessionOrderId, user, password);
-        DBInterface db = new DBInterface(session, global, logger, sessionOrderId, server);
-        T result = onCreate.apply(db);
+        T result = factory.create(session, sessionOrderId);
         global.fireSessionListeners(listener -> listener.opened(sessionOrderId, user, host, session.getUserObject()));
         return result;
     }
 
     @Override
     public IRemoteDBInterface openConnection(String user, String password) throws SQLException {
-        return openConnection(user, password, null, false, Function.identity());
+        return openConnection(
+            user, password, null,
+            (session, sessionOrderId) -> new LocalDBInterface(session, global, logger, sessionOrderId)
+        );
     }
 }

@@ -134,15 +134,16 @@ public final class HttpDispatcher {
             @Override
             public Either<NewSession<IServerSessionId>> open(String user, String password) {
                 try {
-                    NewSession<IServerSessionId> session = lw.openConnection(
-                        user, password, request.hostName(), true,
-                        db -> {
+                    NewSession<IServerSessionId> newSession = lw.openConnection(
+                        user, password, request.hostName(),
+                        (session, sessionOrderId) -> {
                             IServerSessionId id = request.newSessionId();
+                            DBInterface db = new DBInterface(session, lw.global, lw.logger, sessionOrderId);
                             putConnection(id, new DBWrapper(db));
-                            return new NewSession<>(id, db.getUserObject());
+                            return new NewSession<>(id, session.getUserObject());
                         }
                     );
-                    return Either.ok(session);
+                    return Either.ok(newSession);
                 } catch (SQLException ex) {
                     log(ex);
                     return Either.error(ex);
