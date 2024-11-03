@@ -108,8 +108,11 @@ public final class HttpDispatcher {
         }
         if (toClose != null) {
             for (DBWrapper db : toClose) {
+                if (LocalConnectionFactory.TRACE) {
+                    lw.logger.info("Closing inactive connection");
+                }
                 try {
-                    db.db.close(false);
+                    db.db.doClose();
                 } catch (Throwable ex) {
                     log(ex);
                 }

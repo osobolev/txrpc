@@ -41,14 +41,7 @@ class DBInterface implements IDBInterface {
         return new Transaction(global, session);
     }
 
-    final void close(boolean explicit) {
-        if (LocalConnectionFactory.TRACE) {
-            if (explicit) {
-                logger.info("Closing " + getConnectionName());
-            } else {
-                logger.info("Closing inactive " + getConnectionName());
-            }
-        }
+    final void doClose() {
         try {
             session.close();
         } catch (SQLException ex) {
@@ -59,6 +52,9 @@ class DBInterface implements IDBInterface {
 
     @Override
     public final void close() {
-        close(true);
+        if (LocalConnectionFactory.TRACE) {
+            logger.info("Closing " + getConnectionName());
+        }
+        doClose();
     }
 }
