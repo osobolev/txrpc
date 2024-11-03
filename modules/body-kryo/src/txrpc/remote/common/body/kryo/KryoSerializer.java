@@ -10,9 +10,12 @@ import org.objenesis.strategy.StdInstantiatorStrategy;
 import txrpc.remote.common.UnrecoverableRemoteException;
 import txrpc.remote.common.body.ISerializer;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.function.Consumer;
+import java.util.zip.GZIPInputStream;
+import java.util.zip.GZIPOutputStream;
 
 public final class KryoSerializer implements ISerializer {
 
@@ -74,6 +77,7 @@ public final class KryoSerializer implements ISerializer {
         }
     }
 
+    private final boolean gzip;
     private Consumer<Kryo> kryoCustomizer = KryoSerializer::setupKryo;
 
     private final ThreadLocal<Kryo> kryos = ThreadLocal.withInitial(() -> {
@@ -81,6 +85,14 @@ public final class KryoSerializer implements ISerializer {
         kryoCustomizer.accept(kryo);
         return kryo;
     });
+
+    public KryoSerializer(boolean gzip) {
+        this.gzip = gzip;
+    }
+
+    public KryoSerializer() {
+        this(false);
+    }
 
     public static void setupKryo(Kryo kryo) {
         kryo.setRegistrationRequired(false);
@@ -101,12 +113,14 @@ public final class KryoSerializer implements ISerializer {
     }
 
     @Override
-    public Writer newWriter(OutputStream os) {
-        return new KryoWriter(getKryo(), new Output(os));
+    public Writer newWriter(OutputStream os) throws IOException {
+        OutputStream compresssed = gzip ? new GZIPOutputStream(os) : os;
+        return new KryoWriter(getKryo(), new Output(compresssed));
     }
 
     @Override
-    public Reader newReader(InputStream is) {
-        return new KryoReader(getKryo(), new Input(is));
+    public Reader newReader(InputStream is) throws IOException {
+        InputStream decompressed = gzip ? new GZIPInputStream(is) : is;
+        return new KryoReader(getKryo(), new Input(decompressed));
     }
 }

@@ -3,6 +3,8 @@ package txrpc.remote.common.body;
 import txrpc.remote.common.UnrecoverableRemoteException;
 
 import java.io.*;
+import java.util.zip.GZIPInputStream;
+import java.util.zip.GZIPOutputStream;
 
 public final class JavaSerializer implements ISerializer {
 
@@ -48,13 +50,25 @@ public final class JavaSerializer implements ISerializer {
         }
     }
 
+    private final boolean gzip;
+
+    public JavaSerializer(boolean gzip) {
+        this.gzip = gzip;
+    }
+
+    public JavaSerializer() {
+        this(false);
+    }
+
     @Override
     public Writer newWriter(OutputStream os) throws IOException {
-        return new JavaWriter(new ObjectOutputStream(os));
+        OutputStream compresssed = gzip ? new GZIPOutputStream(os) : os;
+        return new JavaWriter(new ObjectOutputStream(compresssed));
     }
 
     @Override
     public Reader newReader(InputStream is) throws IOException {
-        return new JavaReader(new ObjectInputStream(is));
+        InputStream decompressed = gzip ? new GZIPInputStream(is) : is;
+        return new JavaReader(new ObjectInputStream(decompressed));
     }
 }
