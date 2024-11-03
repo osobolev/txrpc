@@ -57,7 +57,7 @@ public final class HttpDispatcher {
     private final Map<String, DBWrapper> connectionMap = new HashMap<>();
 
     public HttpDispatcher(SessionFactory sessionFactory, TxRpcLogger logger, TxRpcGlobalContext global) {
-        this.lw = new LocalConnectionFactory(sessionFactory, logger, global, true);
+        this.lw = new LocalConnectionFactory(sessionFactory, logger, global);
         this.watcher = new WatcherThread(1, this::checkActivity);
         this.watcher.runThread();
     }
@@ -135,7 +135,7 @@ public final class HttpDispatcher {
             public Either<NewSession<IServerSessionId>> open(String user, String password) {
                 try {
                     NewSession<IServerSessionId> session = lw.openConnection(
-                        user, password, request.hostName(),
+                        user, password, request.hostName(), true,
                         db -> {
                             IServerSessionId id = request.newSessionId();
                             putConnection(id, new DBWrapper(db));

@@ -19,28 +19,19 @@ public final class LocalConnectionFactory implements IConnectionFactory {
      */
     public static boolean TRACE = true;
 
-    private final boolean server;
     private final SessionFactory sessionFactory;
     final TxRpcLogger logger;
     final TxRpcGlobalContext global;
 
     private final AtomicLong connectionCount = new AtomicLong(0);
 
-    /**
-     * Constructor.
-     */
     public LocalConnectionFactory(SessionFactory sessionFactory, TxRpcLogger logger, TxRpcGlobalContext global) {
-        this(sessionFactory, logger, global, false);
-    }
-
-    LocalConnectionFactory(SessionFactory sessionFactory, TxRpcLogger logger, TxRpcGlobalContext global, boolean server) {
         this.sessionFactory = sessionFactory;
         this.logger = logger;
         this.global = global;
-        this.server = server;
     }
 
-    <T> T openConnection(String user, String password, String host,
+    <T> T openConnection(String user, String password, String host, boolean server,
                          Function<DBInterface, T> onCreate) throws SQLException {
         long sessionOrderId = connectionCount.getAndIncrement();
         SessionContext session = sessionFactory.login(logger, sessionOrderId, user, password);
@@ -52,6 +43,6 @@ public final class LocalConnectionFactory implements IConnectionFactory {
 
     @Override
     public IRemoteDBInterface openConnection(String user, String password) throws SQLException {
-        return openConnection(user, password, null, Function.identity());
+        return openConnection(user, password, null, false, Function.identity());
     }
 }
