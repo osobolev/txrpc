@@ -62,8 +62,8 @@ public final class JavaSerializer implements ISerializer {
 
     @Override
     public Writer newWriter(OutputStream os) throws IOException {
-        OutputStream compresssed = gzip ? new GZIPOutputStream(os) : os;
-        return new JavaWriter(new ObjectOutputStream(compresssed));
+        OutputStream compressed = gzip ? new GZIPOutputStream(os) : os;
+        return new JavaWriter(new ObjectOutputStream(compressed));
     }
 
     @Override
