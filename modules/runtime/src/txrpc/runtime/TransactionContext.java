@@ -99,10 +99,10 @@ final class TransactionContext {
                 return;
             SQLException error = null;
             try {
-                connection.commit();
+                session.cman.commit(connection);
             } catch (SQLException ex) {
                 try {
-                    connection.rollback();
+                    session.cman.rollback(connection);
                 } catch (SQLException ex2) {
                     ex.addSuppressed(ex2);
                 }
@@ -119,7 +119,7 @@ final class TransactionContext {
                 return;
             SQLException error = null;
             try {
-                connection.rollback();
+                session.cman.rollback(connection);
             } catch (SQLException ex) {
                 error = ex;
             } finally {
