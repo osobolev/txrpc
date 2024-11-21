@@ -199,8 +199,8 @@ public final class HttpDispatcher {
                     t = db.db.getSimpleTransaction();
                 }
                 Class<? extends IDBCommon> iface = (Class<? extends IDBCommon>) method.getDeclaringClass();
-                Object impl = t.getInterface(iface);
                 try {
+                    Object impl = t.getInterface(iface);
                     Object result = method.invoke(impl, args);
                     return Either.ok(result);
                 } catch (InvocationTargetException itex) {
