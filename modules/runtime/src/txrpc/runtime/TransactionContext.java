@@ -36,7 +36,7 @@ final class TransactionContext {
     @SuppressWarnings("unchecked")
     <T extends IDBCommon> T getInterface(Class<T> iface) {
         ClassLoader classLoader = iface.getClassLoader();
-        return (T) Proxy.newProxyInstance(classLoader, new Class[] {iface}, (proxy, method, args) -> {
+        return (T) Proxy.newProxyInstance(classLoader, new Class<?>[] {iface}, (proxy, method, args) -> {
             boolean success = false;
             Object result = null;
             Throwable error = null;
