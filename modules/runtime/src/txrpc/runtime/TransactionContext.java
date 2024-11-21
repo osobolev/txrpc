@@ -13,13 +13,15 @@ final class TransactionContext {
 
     private final TxRpcGlobalContext global;
     private final SessionContext session;
+    private final boolean commitCalls;
 
     private final Object connLock = new Object();
     private Connection connection = null;
 
-    TransactionContext(TxRpcGlobalContext global, SessionContext session) {
+    TransactionContext(TxRpcGlobalContext global, SessionContext session, boolean commitCalls) {
         this.global = global;
         this.session = session;
+        this.commitCalls = commitCalls;
     }
 
     private Connection getConnection() throws SQLException {
@@ -32,7 +34,7 @@ final class TransactionContext {
     }
 
     @SuppressWarnings("unchecked")
-    <T extends IDBCommon> T getInterface(Class<T> iface, boolean commitCalls) {
+    <T extends IDBCommon> T getInterface(Class<T> iface) {
         ClassLoader classLoader = iface.getClassLoader();
         return (T) Proxy.newProxyInstance(classLoader, new Class[] {iface}, (proxy, method, args) -> {
             boolean success = false;

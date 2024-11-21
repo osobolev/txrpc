@@ -10,12 +10,12 @@ public final class Transaction implements ITransaction {
     private final TransactionContext transaction;
 
     public Transaction(TxRpcGlobalContext global, SessionContext session) {
-        this.transaction = new TransactionContext(global, session);
+        this.transaction = new TransactionContext(global, session, false);
     }
 
     @Override
     public <T extends IDBCommon> T getInterface(Class<T> iface) {
-        return transaction.getInterface(iface, false);
+        return transaction.getInterface(iface);
     }
 
     @Override

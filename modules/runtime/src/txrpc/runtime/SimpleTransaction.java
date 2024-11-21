@@ -8,11 +8,11 @@ public final class SimpleTransaction implements ISimpleTransaction {
     private final TransactionContext transaction;
 
     public SimpleTransaction(TxRpcGlobalContext global, SessionContext session) {
-        this.transaction = new TransactionContext(global, session);
+        this.transaction = new TransactionContext(global, session, true);
     }
 
     @Override
     public <T extends IDBCommon> T getInterface(Class<T> iface) {
-        return transaction.getInterface(iface, true);
+        return transaction.getInterface(iface);
     }
 }

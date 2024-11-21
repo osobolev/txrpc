@@ -17,17 +17,15 @@ import java.sql.Connection;
 public final class JdbcInterface implements ISimpleTransaction {
 
     private final TransactionContext transaction;
-    private final boolean commitCalls;
 
     public JdbcInterface(TxRpcGlobalContext global, Connection connection, boolean commitCalls, Object userObject, PreCallCheck beforeCall) {
         SessionContext session = new SessionContext(new SingleConnectionManager(connection), userObject, beforeCall);
-        this.transaction = new TransactionContext(global, session);
-        this.commitCalls = commitCalls;
+        this.transaction = new TransactionContext(global, session, commitCalls);
     }
 
     @Override
     public <T extends IDBCommon> T getInterface(Class<T> iface) {
-        return transaction.getInterface(iface, commitCalls);
+        return transaction.getInterface(iface);
     }
 
     public static Builder builder() {
