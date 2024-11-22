@@ -5,18 +5,7 @@ import java.lang.reflect.Method;
 
 public interface TxRpcInteraction<S> {
 
-    final class NewSession<S> {
-
-        public final S sessionId;
-        public final Object userObject;
-
-        public NewSession(S sessionId, Object userObject) {
-            this.sessionId = sessionId;
-            this.userObject = userObject;
-        }
-    }
-
-    Either<NewSession<S>> open(String user, String password) throws IOException;
+    Either<S> open(String user, String password) throws IOException;
 
     Either<String> beginTransaction(S sessionId) throws IOException;
 

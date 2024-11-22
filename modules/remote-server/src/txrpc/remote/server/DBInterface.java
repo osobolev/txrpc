@@ -12,7 +12,7 @@ import java.sql.SQLException;
 
 class DBInterface implements IDBInterface {
 
-    protected final SessionContext session;
+    private final SessionContext session;
     private final TxRpcGlobalContext global;
     private final TxRpcLogger logger;
     private final long sessionOrderId;

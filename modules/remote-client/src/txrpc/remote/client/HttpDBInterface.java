@@ -13,12 +13,10 @@ final class HttpDBInterface implements IRemoteDBInterface {
 
     private final TxRpcInteraction<IClientSessionId> interaction;
     private final IClientSessionId sessionId;
-    private final Object userObject;
 
-    HttpDBInterface(TxRpcInteraction<IClientSessionId> interaction, IClientSessionId sessionId, Object userObject) {
+    HttpDBInterface(TxRpcInteraction<IClientSessionId> interaction, IClientSessionId sessionId) {
         this.interaction = interaction;
         this.sessionId = sessionId;
-        this.userObject = userObject;
     }
 
     @Override
@@ -52,10 +50,5 @@ final class HttpDBInterface implements IRemoteDBInterface {
         } catch (IOException ex) {
             throw new RemoteException(ex);
         }
-    }
-
-    @Override
-    public Object getUserObject() {
-        return userObject;
     }
 }

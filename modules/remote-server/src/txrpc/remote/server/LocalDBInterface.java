@@ -17,9 +17,4 @@ final class LocalDBInterface extends DBInterface implements IRemoteDBInterface {
     @Override
     public void ping() {
     }
-
-    @Override
-    public Object getUserObject() {
-        return session.getUserObject();
-    }
 }

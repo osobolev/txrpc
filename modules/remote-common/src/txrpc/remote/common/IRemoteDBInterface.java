@@ -13,9 +13,4 @@ public interface IRemoteDBInterface extends IDBInterface {
      * Checks server for availability and signal that client is alive.
      */
     void ping();
-
-    /**
-     * Returns user identifier object.
-     */
-    Object getUserObject();
 }

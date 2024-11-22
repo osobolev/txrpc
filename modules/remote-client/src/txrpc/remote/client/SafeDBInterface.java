@@ -119,17 +119,6 @@ public final class SafeDBInterface implements IRemoteDBInterface {
         }
     }
 
-    @Override
-    public Object getUserObject() {
-        try {
-            return getDb().getUserObject();
-        } catch (RemoteException ex) {
-            throw ex;
-        } catch (Exception ex) {
-            throw new RemoteException(ex);
-        }
-    }
-
     <T extends IDBCommon> T wrap(Class<T> iface, SafeWrapper<T> obj) {
         return iface.cast(Proxy.newProxyInstance(iface.getClassLoader(), new Class<?>[] {iface}, (proxy, method, args) -> {
             try {

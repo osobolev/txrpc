@@ -5,7 +5,6 @@ import txrpc.remote.client.IClientSessionId;
 import txrpc.remote.common.Either;
 import txrpc.remote.common.TxRpcInteraction;
 import txrpc.remote.common.body.HttpCommand;
-import txrpc.remote.common.body.HttpDBInterfaceInfo;
 import txrpc.remote.common.body.HttpRequest;
 import txrpc.remote.common.body.HttpResult;
 
@@ -57,10 +56,10 @@ public abstract class BaseClientBodyInteraction implements TxRpcInteraction<ICli
     }
 
     @Override
-    public final Either<NewSession<IClientSessionId>> open(String user, String password) throws IOException {
+    public final Either<IClientSessionId> open(String user, String password) throws IOException {
         IClientSessionId sessionId = newSessionId();
-        return httpInvoke(HttpDBInterfaceInfo.class, sessionId, null, HttpCommand.OPEN, user, password)
-            .map(info -> new NewSession<>(newSessionId(sessionId, info.id), info.userObject));
+        return httpInvoke(Object.class, sessionId, null, HttpCommand.OPEN, user, password)
+            .map(wireId -> newSessionId(sessionId, wireId));
     }
 
     @Override

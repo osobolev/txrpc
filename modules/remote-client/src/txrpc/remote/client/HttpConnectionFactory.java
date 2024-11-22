@@ -22,8 +22,8 @@ public final class HttpConnectionFactory implements IConnectionFactory {
     @Override
     public IRemoteDBInterface openConnection(String user, String password) throws SQLException {
         try {
-            TxRpcInteraction.NewSession<IClientSessionId> session = interaction.open(user, password).rethrow(SQLException.class);
-            return new HttpDBInterface(interaction, session.sessionId, session.userObject);
+            IClientSessionId sessionId = interaction.open(user, password).rethrow(SQLException.class);
+            return new HttpDBInterface(interaction, sessionId);
         } catch (IOException ex) {
             throw new RemoteException(ex);
         }

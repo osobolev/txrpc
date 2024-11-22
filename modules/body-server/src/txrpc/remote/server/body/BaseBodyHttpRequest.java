@@ -57,9 +57,7 @@ public abstract class BaseBodyHttpRequest implements IHttpRequest {
         case OPEN:
             String user = (String) data.params[0];
             String password = (String) data.params[1];
-            return interaction
-                .open(user, password)
-                .map(session -> new HttpDBInterfaceInfo(newSessionWireId(session.sessionId), session.userObject));
+            return interaction.open(user, password).map(this::newSessionWireId);
         case GET_TRANSACTION:
             return interaction.beginTransaction(sessionId);
         case COMMIT:
