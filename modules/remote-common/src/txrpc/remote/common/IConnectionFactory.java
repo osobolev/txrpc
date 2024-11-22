@@ -1,5 +1,7 @@
 package txrpc.remote.common;
 
+import txrpc.api.IDBInterface;
+
 import java.sql.SQLException;
 
 /**
@@ -15,5 +17,5 @@ public interface IConnectionFactory {
      * @param password external password
      * @return DB connection
      */
-    IRemoteDBInterface openConnection(String user, String password) throws SQLException;
+    IDBInterface openConnection(String user, String password) throws SQLException;
 }

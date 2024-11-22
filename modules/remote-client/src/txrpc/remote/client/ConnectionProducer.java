@@ -1,11 +1,11 @@
 package txrpc.remote.client;
 
-import txrpc.remote.common.IRemoteDBInterface;
+import txrpc.api.IDBInterface;
 
 /**
  * Used for client reconnects.
  */
 public interface ConnectionProducer {
 
-    IRemoteDBInterface open() throws Exception;
+    IDBInterface open() throws Exception;
 }

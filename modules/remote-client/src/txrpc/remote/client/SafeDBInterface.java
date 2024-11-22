@@ -4,7 +4,6 @@ import txrpc.api.IDBCommon;
 import txrpc.api.IDBInterface;
 import txrpc.api.ISimpleTransaction;
 import txrpc.api.ITransaction;
-import txrpc.remote.common.IRemoteDBInterface;
 import txrpc.remote.common.RemoteException;
 import txrpc.remote.common.UnrecoverableRemoteException;
 import txrpc.remote.common.WatcherThread;
@@ -19,9 +18,9 @@ import java.util.function.Consumer;
  * Caches transactions - creates only one transaction per thread.
  * Also runs activity notification thread to notify server about this client.
  */
-public final class SafeDBInterface implements IRemoteDBInterface {
+public final class SafeDBInterface implements IDBInterface {
 
-    private IRemoteDBInterface idb;
+    private IDBInterface idb;
     private final ConnectionProducer producer;
     private int resetCounter = 0;
     private boolean unrecoverable = false;
@@ -38,11 +37,11 @@ public final class SafeDBInterface implements IRemoteDBInterface {
      *
      * @param idb DB connection
      */
-    public SafeDBInterface(Consumer<Throwable> logger, IRemoteDBInterface idb) {
+    public SafeDBInterface(Consumer<Throwable> logger, IDBInterface idb) {
         this(logger, idb, null);
     }
 
-    public SafeDBInterface(Consumer<Throwable> logger, IRemoteDBInterface idb, ConnectionProducer producer) {
+    public SafeDBInterface(Consumer<Throwable> logger, IDBInterface idb, ConnectionProducer producer) {
         this.idb = idb;
         this.producer = producer;
         // pinging twice as frequent as server checks session activity
@@ -56,7 +55,7 @@ public final class SafeDBInterface implements IRemoteDBInterface {
         this.watcher.runThread();
     }
 
-    private IRemoteDBInterface getDb() throws Exception {
+    private IDBInterface getDb() throws Exception {
         synchronized (dbLock) {
             if (idb == null && producer != null) {
                 if (unrecoverable)
@@ -97,10 +96,13 @@ public final class SafeDBInterface implements IRemoteDBInterface {
         }
     }
 
-    @Override
-    public void ping() {
+    private void ping() {
         try {
-            getDb().ping();
+            IDBInterface db = getDb();
+            if (db instanceof HttpDBInterface) {
+                HttpDBInterface http = (HttpDBInterface) db;
+                http.ping();
+            }
         } catch (RemoteException ex) {
             throw ex;
         } catch (Exception ex) {

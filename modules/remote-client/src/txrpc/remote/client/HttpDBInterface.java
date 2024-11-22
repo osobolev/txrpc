@@ -1,15 +1,15 @@
 package txrpc.remote.client;
 
+import txrpc.api.IDBInterface;
 import txrpc.api.ISimpleTransaction;
 import txrpc.api.ITransaction;
-import txrpc.remote.common.IRemoteDBInterface;
 import txrpc.remote.common.RemoteException;
 import txrpc.remote.common.TxRpcInteraction;
 
 import java.io.IOException;
 import java.sql.SQLException;
 
-final class HttpDBInterface implements IRemoteDBInterface {
+final class HttpDBInterface implements IDBInterface {
 
     private final TxRpcInteraction<IClientSessionId> interaction;
     private final IClientSessionId sessionId;
@@ -34,8 +34,7 @@ final class HttpDBInterface implements IRemoteDBInterface {
         }
     }
 
-    @Override
-    public void ping() {
+    void ping() {
         try {
             interaction.ping(sessionId).rethrow(RuntimeException.class);
         } catch (IOException ex) {

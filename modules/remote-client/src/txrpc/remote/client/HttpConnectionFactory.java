@@ -1,7 +1,7 @@
 package txrpc.remote.client;
 
+import txrpc.api.IDBInterface;
 import txrpc.remote.common.IConnectionFactory;
-import txrpc.remote.common.IRemoteDBInterface;
 import txrpc.remote.common.RemoteException;
 import txrpc.remote.common.TxRpcInteraction;
 
@@ -20,7 +20,7 @@ public final class HttpConnectionFactory implements IConnectionFactory {
     }
 
     @Override
-    public IRemoteDBInterface openConnection(String user, String password) throws SQLException {
+    public IDBInterface openConnection(String user, String password) throws SQLException {
         try {
             IClientSessionId sessionId = interaction.open(user, password).rethrow(SQLException.class);
             return new HttpDBInterface(interaction, sessionId);

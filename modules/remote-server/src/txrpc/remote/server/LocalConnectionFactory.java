@@ -1,7 +1,7 @@
 package txrpc.remote.server;
 
+import txrpc.api.IDBInterface;
 import txrpc.remote.common.IConnectionFactory;
-import txrpc.remote.common.IRemoteDBInterface;
 import txrpc.runtime.SessionContext;
 import txrpc.runtime.TxRpcGlobalContext;
 
@@ -45,7 +45,7 @@ public final class LocalConnectionFactory implements IConnectionFactory {
     }
 
     @Override
-    public IRemoteDBInterface openConnection(String user, String password) throws SQLException {
+    public IDBInterface openConnection(String user, String password) throws SQLException {
         return openConnection(
             user, password, null,
             (session, sessionOrderId) -> new LocalDBInterface(session, global, logger, sessionOrderId)
