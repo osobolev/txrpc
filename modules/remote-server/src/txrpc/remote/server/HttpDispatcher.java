@@ -141,7 +141,7 @@ public final class HttpDispatcher {
                         user, password, request.hostName(),
                         (session, sessionOrderId) -> {
                             IServerSessionId id = request.newSessionId();
-                            DBInterface db = new DBInterface(session, lw.global, lw.logger, sessionOrderId);
+                            DBInterface db = new DBInterface(session, lw.global, lw.logger, sessionOrderId, false);
                             putConnection(id, new DBWrapper(db));
                             return id;
                         }

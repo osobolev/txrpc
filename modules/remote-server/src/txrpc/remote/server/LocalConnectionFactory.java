@@ -48,7 +48,7 @@ public final class LocalConnectionFactory implements IConnectionFactory {
     public IDBInterface openConnection(String user, String password) throws SQLException {
         return openConnection(
             user, password, null,
-            (session, sessionOrderId) -> new LocalDBInterface(session, global, logger, sessionOrderId)
+            (session, sessionOrderId) -> new DBInterface(session, global, logger, sessionOrderId, true)
         );
     }
 }

@@ -10,38 +10,40 @@ import txrpc.runtime.TxRpcGlobalContext;
 
 import java.sql.SQLException;
 
-class DBInterface implements IDBInterface {
+final class DBInterface implements IDBInterface {
 
     private final SessionContext session;
     private final TxRpcGlobalContext global;
     private final TxRpcLogger logger;
     private final long sessionOrderId;
+    private final boolean local;
 
-    DBInterface(SessionContext session, TxRpcGlobalContext global, TxRpcLogger logger, long sessionOrderId) {
+    DBInterface(SessionContext session, TxRpcGlobalContext global, TxRpcLogger logger, long sessionOrderId, boolean local) {
         this.session = session;
         this.global = global;
         this.logger = logger;
         this.sessionOrderId = sessionOrderId;
+        this.local = local;
         if (LocalConnectionFactory.TRACE) {
             logger.info("Opened " + getConnectionName());
         }
     }
 
-    protected String getConnectionName() {
-        return "connection";
+    String getConnectionName() {
+        return local ? "local connection" : "connection";
     }
 
     @Override
-    public final ISimpleTransaction getSimpleTransaction() {
+    public ISimpleTransaction getSimpleTransaction() {
         return new SimpleTransaction(global, session);
     }
 
     @Override
-    public final ITransaction getTransaction() {
+    public ITransaction getTransaction() {
         return new Transaction(global, session);
     }
 
-    final void doClose() {
+    void doClose() {
         try {
             session.close();
         } catch (SQLException ex) {
@@ -51,7 +53,7 @@ class DBInterface implements IDBInterface {
     }
 
     @Override
-    public final void close() {
+    public void close() {
         if (LocalConnectionFactory.TRACE) {
             logger.info("Closing " + getConnectionName());
         }
