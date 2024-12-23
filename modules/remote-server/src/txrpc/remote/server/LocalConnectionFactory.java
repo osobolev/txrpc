@@ -9,6 +9,7 @@ import txrpc.runtime.TxRpcGlobalContext;
 
 import java.sql.SQLException;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.function.Function;
 
 /**
  * {@link IConnectionFactory} implementation for local connection.
@@ -32,48 +33,41 @@ public final class LocalConnectionFactory implements IConnectionFactory {
         this.global = global;
     }
 
-    interface DBInterfaceFactory<T> {
-
-        T create(DBInterface db);
-    }
-
     <T> T openConnection(String user, String password, String host,
-                         DBInterfaceFactory<T> factory) throws SQLException {
+                         Function<DBInterface, T> mapResult) throws SQLException {
         long sessionOrderId = connectionCount.getAndIncrement();
         SessionContext session = sessionFactory.login(logger, sessionOrderId, user, password);
         DBInterface db = new DBInterface(global, session, logger, sessionOrderId);
         if (TRACE) {
             logger.info("Opened connection");
         }
-        T result = factory.create(db);
+        T result = mapResult.apply(db);
         global.fireSessionListeners(listener -> listener.opened(sessionOrderId, user, host, session.getUserObject()));
         return result;
     }
 
     @Override
     public IDBInterface openConnection(String user, String password) throws SQLException {
-        return openConnection(
-            user, password, null,
-            db -> new IDBInterface() {
+        DBInterface db = openConnection(user, password, null, Function.identity());
+        return new IDBInterface() {
 
-                @Override
-                public ISimpleTransaction getSimpleTransaction() {
-                    return db.getSimpleTransaction();
-                }
-
-                @Override
-                public ITransaction getTransaction() {
-                    return db.getTransaction();
-                }
-
-                @Override
-                public void close() {
-                    if (TRACE) {
-                        logger.info("Closing connection");
-                    }
-                    db.close();
-                }
+            @Override
+            public ISimpleTransaction getSimpleTransaction() {
+                return db.getSimpleTransaction();
             }
-        );
+
+            @Override
+            public ITransaction getTransaction() {
+                return db.getTransaction();
+            }
+
+            @Override
+            public void close() {
+                if (TRACE) {
+                    logger.info("Closing connection");
+                }
+                db.close();
+            }
+        };
     }
 }
