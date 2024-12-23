@@ -36,9 +36,6 @@ public final class LocalConnectionFactory implements IConnectionFactory {
         long sessionOrderId = connectionCount.getAndIncrement();
         SessionContext session = sessionFactory.login(logger, sessionOrderId, user, password);
         DBInterface db = new DBInterface(global, session, logger, sessionOrderId);
-        if (TRACE) {
-            logger.info("Opened connection");
-        }
         T result = mapResult.apply(db);
         global.fireSessionListeners(listener -> listener.opened(sessionOrderId, user, host, session.getUserObject()));
         return result;
@@ -46,26 +43,30 @@ public final class LocalConnectionFactory implements IConnectionFactory {
 
     @Override
     public IDBInterface openConnection(String user, String password) throws SQLException {
-        IDBInterface db = openConnection(user, password, null, Function.identity());
-        return new IDBInterface() {
-
-            @Override
-            public ISimpleTransaction getSimpleTransaction() throws SQLException {
-                return db.getSimpleTransaction();
+        return openConnection(user, password, null, db -> {
+            if (TRACE) {
+                logger.info("Opened local connection");
             }
+            return new IDBInterface() {
 
-            @Override
-            public ITransaction getTransaction() throws SQLException {
-                return db.getTransaction();
-            }
-
-            @Override
-            public void close() throws SQLException {
-                if (TRACE) {
-                    logger.info("Closing connection");
+                @Override
+                public ISimpleTransaction getSimpleTransaction() throws SQLException {
+                    return db.getSimpleTransaction();
                 }
-                db.close();
-            }
-        };
+
+                @Override
+                public ITransaction getTransaction() throws SQLException {
+                    return db.getTransaction();
+                }
+
+                @Override
+                public void close() throws SQLException {
+                    if (TRACE) {
+                        logger.info("Closing local connection");
+                    }
+                    db.close();
+                }
+            };
+        });
     }
 }

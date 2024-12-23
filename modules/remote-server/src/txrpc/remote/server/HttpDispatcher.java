@@ -146,6 +146,9 @@ public final class HttpDispatcher {
                     IServerSessionId newSessionId = lw.openConnection(
                         user, password, request.hostName(),
                         db -> {
+                            if (LocalConnectionFactory.TRACE) {
+                                logger.info("Opened connection");
+                            }
                             IServerSessionId id = request.newSessionId();
                             putConnection(id, new DBWrapper(db));
                             return id;
