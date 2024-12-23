@@ -14,11 +14,11 @@ public final class SessionContext {
         this.beforeCall = beforeCall;
     }
 
-    public void close() throws SQLException {
+    void close() throws SQLException {
         cman.close();
     }
 
-    public Object getUserObject() {
+    Object getUserObject() {
         return userObject;
     }
 }

@@ -1,4 +1,4 @@
-package txrpc.remote.server;
+package txrpc.runtime;
 
 public interface TxRpcLogger {
 

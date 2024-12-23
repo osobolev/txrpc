@@ -8,7 +8,10 @@ import txrpc.remote.common.Either;
 import txrpc.remote.common.RemoteException;
 import txrpc.remote.common.TxRpcInteraction;
 import txrpc.remote.common.WatcherThread;
+import txrpc.runtime.LocalConnectionFactory;
+import txrpc.runtime.SessionFactory;
 import txrpc.runtime.TxRpcGlobalContext;
+import txrpc.runtime.TxRpcLogger;
 
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
@@ -32,6 +35,7 @@ import java.util.concurrent.atomic.AtomicLong;
  */
 public final class HttpDispatcher {
 
+    private final TxRpcLogger logger;
     private final LocalConnectionFactory lw;
     private final WatcherThread watcher;
 
@@ -58,6 +62,7 @@ public final class HttpDispatcher {
     private final Map<String, DBWrapper> connectionMap = new HashMap<>();
 
     public HttpDispatcher(SessionFactory sessionFactory, TxRpcLogger logger, TxRpcGlobalContext global) {
+        this.logger = logger;
         this.lw = new LocalConnectionFactory(sessionFactory, logger, global);
         this.watcher = new WatcherThread(1, this::checkActivity);
         this.watcher.runThread();
@@ -68,7 +73,7 @@ public final class HttpDispatcher {
     }
 
     private void log(Throwable ex) {
-        lw.logger.error(ex);
+        logger.error(ex);
     }
 
     private void putConnection(IServerSessionId sessionId, DBWrapper db) {
@@ -110,7 +115,7 @@ public final class HttpDispatcher {
         if (toClose != null) {
             for (IDBInterface db : toClose) {
                 if (LocalConnectionFactory.TRACE) {
-                    lw.logger.info("Closing inactive connection");
+                    logger.info("Closing inactive connection");
                 }
                 try {
                     db.close();
@@ -229,7 +234,7 @@ public final class HttpDispatcher {
                 if (db != null) {
                     db.ping();
                     if (LocalConnectionFactory.TRACE) {
-                        lw.logger.trace(":: Ping from " + request.hostName());
+                        logger.trace(":: Ping from " + request.hostName());
                     }
                 }
                 return Either.ok(null);
@@ -239,7 +244,7 @@ public final class HttpDispatcher {
             public Either<Void> close(IServerSessionId sessionId) {
                 DBWrapper db = getSession(sessionId);
                 if (LocalConnectionFactory.TRACE) {
-                    lw.logger.info("Closing connection");
+                    logger.info("Closing connection");
                 }
                 try {
                     db.db.close();

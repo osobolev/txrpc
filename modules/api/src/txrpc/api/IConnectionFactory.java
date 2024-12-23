@@ -1,6 +1,4 @@
-package txrpc.remote.common;
-
-import txrpc.api.IDBInterface;
+package txrpc.api;
 
 import java.sql.SQLException;
 

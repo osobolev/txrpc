@@ -1,11 +1,9 @@
-package txrpc.remote.server;
+package txrpc.runtime;
 
+import txrpc.api.IConnectionFactory;
 import txrpc.api.IDBInterface;
 import txrpc.api.ISimpleTransaction;
 import txrpc.api.ITransaction;
-import txrpc.remote.common.IConnectionFactory;
-import txrpc.runtime.SessionContext;
-import txrpc.runtime.TxRpcGlobalContext;
 
 import java.sql.SQLException;
 import java.util.concurrent.atomic.AtomicLong;
@@ -33,8 +31,8 @@ public final class LocalConnectionFactory implements IConnectionFactory {
         this.global = global;
     }
 
-    <T> T openConnection(String user, String password, String host,
-                         Function<IDBInterface, T> mapResult) throws SQLException {
+    public <T> T openConnection(String user, String password, String host,
+                                Function<IDBInterface, T> mapResult) throws SQLException {
         long sessionOrderId = connectionCount.getAndIncrement();
         SessionContext session = sessionFactory.login(logger, sessionOrderId, user, password);
         DBInterface db = new DBInterface(global, session, logger, sessionOrderId);

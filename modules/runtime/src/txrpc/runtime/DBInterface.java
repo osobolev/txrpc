@@ -1,12 +1,8 @@
-package txrpc.remote.server;
+package txrpc.runtime;
 
 import txrpc.api.IDBInterface;
 import txrpc.api.ISimpleTransaction;
 import txrpc.api.ITransaction;
-import txrpc.runtime.SessionContext;
-import txrpc.runtime.SimpleTransaction;
-import txrpc.runtime.Transaction;
-import txrpc.runtime.TxRpcGlobalContext;
 
 import java.sql.SQLException;
 

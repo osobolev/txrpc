@@ -1,7 +1,7 @@
 package txrpc.remote.client;
 
+import txrpc.api.IConnectionFactory;
 import txrpc.api.IDBInterface;
-import txrpc.remote.common.IConnectionFactory;
 import txrpc.remote.common.RemoteException;
 import txrpc.remote.common.TxRpcInteraction;
 

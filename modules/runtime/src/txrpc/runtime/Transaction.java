@@ -5,11 +5,11 @@ import txrpc.api.ITransaction;
 
 import java.sql.SQLException;
 
-public final class Transaction implements ITransaction {
+final class Transaction implements ITransaction {
 
     private final TransactionContext transaction;
 
-    public Transaction(TxRpcGlobalContext global, SessionContext session) {
+    Transaction(TxRpcGlobalContext global, SessionContext session) {
         this.transaction = new TransactionContext(global, session, false);
     }
 

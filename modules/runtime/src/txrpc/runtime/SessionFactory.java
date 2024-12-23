@@ -1,7 +1,6 @@
-package txrpc.remote.server;
+package txrpc.runtime;
 
-import txrpc.remote.common.IConnectionFactory;
-import txrpc.runtime.SessionContext;
+import txrpc.api.IConnectionFactory;
 
 import java.sql.SQLException;
 
