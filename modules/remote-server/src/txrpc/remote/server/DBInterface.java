@@ -12,14 +12,14 @@ import java.sql.SQLException;
 
 final class DBInterface implements IDBInterface {
 
-    private final SessionContext session;
     private final TxRpcGlobalContext global;
+    private final SessionContext session;
     private final TxRpcLogger logger;
     private final long sessionOrderId;
 
-    DBInterface(SessionContext session, TxRpcGlobalContext global, TxRpcLogger logger, long sessionOrderId) {
-        this.session = session;
+    DBInterface(TxRpcGlobalContext global, SessionContext session, TxRpcLogger logger, long sessionOrderId) {
         this.global = global;
+        this.session = session;
         this.logger = logger;
         this.sessionOrderId = sessionOrderId;
     }

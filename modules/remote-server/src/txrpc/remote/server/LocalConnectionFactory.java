@@ -41,7 +41,7 @@ public final class LocalConnectionFactory implements IConnectionFactory {
                          DBInterfaceFactory<T> factory) throws SQLException {
         long sessionOrderId = connectionCount.getAndIncrement();
         SessionContext session = sessionFactory.login(logger, sessionOrderId, user, password);
-        DBInterface db = new DBInterface(session, global, logger, sessionOrderId);
+        DBInterface db = new DBInterface(global, session, logger, sessionOrderId);
         if (TRACE) {
             logger.info("Opened connection");
         }
