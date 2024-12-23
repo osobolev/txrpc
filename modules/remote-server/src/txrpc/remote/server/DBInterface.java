@@ -16,21 +16,12 @@ final class DBInterface implements IDBInterface {
     private final TxRpcGlobalContext global;
     private final TxRpcLogger logger;
     private final long sessionOrderId;
-    private final boolean local;
 
-    DBInterface(SessionContext session, TxRpcGlobalContext global, TxRpcLogger logger, long sessionOrderId, boolean local) {
+    DBInterface(SessionContext session, TxRpcGlobalContext global, TxRpcLogger logger, long sessionOrderId) {
         this.session = session;
         this.global = global;
         this.logger = logger;
         this.sessionOrderId = sessionOrderId;
-        this.local = local;
-        if (LocalConnectionFactory.TRACE) {
-            logger.info("Opened " + getConnectionName());
-        }
-    }
-
-    String getConnectionName() {
-        return local ? "local connection" : "connection";
     }
 
     @Override
@@ -43,20 +34,13 @@ final class DBInterface implements IDBInterface {
         return new Transaction(global, session);
     }
 
-    void doClose() {
+    @Override
+    public void close() {
         try {
             session.close();
         } catch (SQLException ex) {
             logger.error(ex);
         }
         global.fireSessionListeners(listener -> listener.closed(sessionOrderId));
-    }
-
-    @Override
-    public void close() {
-        if (LocalConnectionFactory.TRACE) {
-            logger.info("Closing " + getConnectionName());
-        }
-        doClose();
     }
 }

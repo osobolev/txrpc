@@ -109,10 +109,10 @@ public final class HttpDispatcher {
         if (toClose != null) {
             for (DBInterface db : toClose) {
                 if (LocalConnectionFactory.TRACE) {
-                    lw.logger.info("Closing inactive " + db.getConnectionName());
+                    lw.logger.info("Closing inactive connection");
                 }
                 try {
-                    db.doClose();
+                    db.close();
                 } catch (Throwable ex) {
                     log(ex);
                 }
@@ -139,9 +139,8 @@ public final class HttpDispatcher {
                 try {
                     IServerSessionId newSessionId = lw.openConnection(
                         user, password, request.hostName(),
-                        (session, sessionOrderId) -> {
+                        db -> {
                             IServerSessionId id = request.newSessionId();
-                            DBInterface db = new DBInterface(session, lw.global, lw.logger, sessionOrderId, false);
                             putConnection(id, new DBWrapper(db));
                             return id;
                         }
@@ -228,6 +227,9 @@ public final class HttpDispatcher {
             @Override
             public Either<Void> close(IServerSessionId sessionId) {
                 DBWrapper db = getSession(sessionId);
+                if (LocalConnectionFactory.TRACE) {
+                    lw.logger.info("Closing connection");
+                }
                 db.db.close();
                 endSession(sessionId);
                 return Either.ok(null);
