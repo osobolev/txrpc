@@ -34,7 +34,7 @@ public final class LocalConnectionFactory implements IConnectionFactory {
     }
 
     <T> T openConnection(String user, String password, String host,
-                         Function<DBInterface, T> mapResult) throws SQLException {
+                         Function<IDBInterface, T> mapResult) throws SQLException {
         long sessionOrderId = connectionCount.getAndIncrement();
         SessionContext session = sessionFactory.login(logger, sessionOrderId, user, password);
         DBInterface db = new DBInterface(global, session, logger, sessionOrderId);
@@ -48,21 +48,21 @@ public final class LocalConnectionFactory implements IConnectionFactory {
 
     @Override
     public IDBInterface openConnection(String user, String password) throws SQLException {
-        DBInterface db = openConnection(user, password, null, Function.identity());
+        IDBInterface db = openConnection(user, password, null, Function.identity());
         return new IDBInterface() {
 
             @Override
-            public ISimpleTransaction getSimpleTransaction() {
+            public ISimpleTransaction getSimpleTransaction() throws SQLException {
                 return db.getSimpleTransaction();
             }
 
             @Override
-            public ITransaction getTransaction() {
+            public ITransaction getTransaction() throws SQLException {
                 return db.getTransaction();
             }
 
             @Override
-            public void close() {
+            public void close() throws SQLException {
                 if (TRACE) {
                     logger.info("Closing connection");
                 }

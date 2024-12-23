@@ -1,6 +1,7 @@
 package txrpc.remote.server;
 
 import txrpc.api.IDBCommon;
+import txrpc.api.IDBInterface;
 import txrpc.api.ISimpleTransaction;
 import txrpc.api.ITransaction;
 import txrpc.remote.common.Either;
@@ -36,12 +37,12 @@ public final class HttpDispatcher {
 
     private static final class DBWrapper {
 
-        final DBInterface db;
+        final IDBInterface db;
         final AtomicInteger transactionCount = new AtomicInteger(0);
         final ConcurrentMap<String, ITransaction> transactions = new ConcurrentHashMap<>();
         final AtomicLong lastActive = new AtomicLong(getCurrentTime());
 
-        DBWrapper(DBInterface db) {
+        DBWrapper(IDBInterface db) {
             this.db = db;
         }
 
@@ -92,7 +93,7 @@ public final class HttpDispatcher {
 
     private void checkActivity() {
         long time = getCurrentTime();
-        List<DBInterface> toClose = null;
+        List<IDBInterface> toClose = null;
         synchronized (connectionMap) {
             Iterator<DBWrapper> it = connectionMap.values().iterator();
             while (it.hasNext()) {
@@ -107,7 +108,7 @@ public final class HttpDispatcher {
             }
         }
         if (toClose != null) {
-            for (DBInterface db : toClose) {
+            for (IDBInterface db : toClose) {
                 if (LocalConnectionFactory.TRACE) {
                     lw.logger.info("Closing inactive connection");
                 }
@@ -155,10 +156,15 @@ public final class HttpDispatcher {
             @Override
             public Either<String> beginTransaction(IServerSessionId sessionId) {
                 DBWrapper db = getSession(sessionId);
-                ITransaction trans = db.db.getTransaction();
-                String transactionId = String.valueOf(db.transactionCount.getAndIncrement());
-                db.transactions.put(transactionId, trans);
-                return Either.ok(transactionId);
+                try {
+                    ITransaction trans = db.db.getTransaction();
+                    String transactionId = String.valueOf(db.transactionCount.getAndIncrement());
+                    db.transactions.put(transactionId, trans);
+                    return Either.ok(transactionId);
+                } catch (SQLException ex) {
+                    log(ex);
+                    return Either.error(ex);
+                }
             }
 
             @Override
@@ -195,7 +201,12 @@ public final class HttpDispatcher {
                         throw new RemoteException("Transaction inactive: " + transactionId);
                     t = transaction;
                 } else {
-                    t = db.db.getSimpleTransaction();
+                    try {
+                        t = db.db.getSimpleTransaction();
+                    } catch (SQLException ex) {
+                        log(ex);
+                        return Either.error(ex);
+                    }
                 }
                 Class<? extends IDBCommon> iface = (Class<? extends IDBCommon>) method.getDeclaringClass();
                 try {
@@ -230,7 +241,11 @@ public final class HttpDispatcher {
                 if (LocalConnectionFactory.TRACE) {
                     lw.logger.info("Closing connection");
                 }
-                db.db.close();
+                try {
+                    db.db.close();
+                } catch (Throwable ex) {
+                    log(ex);
+                }
                 endSession(sessionId);
                 return Either.ok(null);
             }
