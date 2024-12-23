@@ -20,8 +20,8 @@ public final class LocalConnectionFactory implements IConnectionFactory {
     public static boolean TRACE = true;
 
     private final SessionFactory sessionFactory;
-    final TxRpcLogger logger;
-    final TxRpcGlobalContext global;
+    private final TxRpcLogger logger;
+    private final TxRpcGlobalContext global;
 
     private final AtomicLong connectionCount = new AtomicLong(0);
 
