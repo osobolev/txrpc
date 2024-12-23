@@ -21,24 +21,4 @@ public final class SessionContext {
     Object getUserObject() {
         return userObject;
     }
-
-    public static class Builder {
-
-        private Object userObject = null;
-        private PreCallCheck beforeCall = null;
-
-        public Builder setUserObject(Object userObject) {
-            this.userObject = userObject;
-            return this;
-        }
-
-        public Builder setBeforeCall(PreCallCheck beforeCall) {
-            this.beforeCall = beforeCall;
-            return this;
-        }
-
-        public SessionContext build(ConnectionManager cman) {
-            return new SessionContext(cman, userObject, beforeCall);
-        }
-    }
 }

@@ -22,16 +22,40 @@ public final class JdbcInterface implements ISimpleTransaction {
         this.transaction = new TransactionContext(global, session, commitCalls);
     }
 
-    public JdbcInterface(TxRpcGlobalContext global, SessionContext session) {
-        this(global, session, false);
-    }
-
     @Override
     public <T extends IDBCommon> T getInterface(Class<T> iface) {
         return transaction.getInterface(iface);
     }
 
-    public static SessionContext jdbcContext(SessionContext.Builder builder, Connection connection) {
-        return builder.build(new SingleConnectionManager(connection));
+    public static Builder builder() {
+        return new Builder();
+    }
+
+    public static final class Builder {
+
+        private boolean commitCalls = false;
+        private Object userObject = null;
+        private PreCallCheck beforeCall = null;
+
+        public Builder setCommitCalls(boolean commitCalls) {
+            this.commitCalls = commitCalls;
+            return this;
+        }
+
+        public Builder setUserObject(Object userObject) {
+            this.userObject = userObject;
+            return this;
+        }
+
+        public Builder setBeforeCall(PreCallCheck beforeCall) {
+            this.beforeCall = beforeCall;
+            return this;
+        }
+
+        public JdbcInterface build(TxRpcGlobalContext global, Connection connection) {
+            SingleConnectionManager cman = new SingleConnectionManager(connection);
+            SessionContext session = new SessionContext(cman, userObject, beforeCall);
+            return new JdbcInterface(global, session, commitCalls);
+        }
     }
 }
