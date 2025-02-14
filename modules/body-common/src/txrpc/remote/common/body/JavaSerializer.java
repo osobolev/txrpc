@@ -17,6 +17,11 @@ public final class JavaSerializer implements ISerializer {
         }
 
         @Override
+        public void writeStreamIndex(int index) throws IOException {
+            oos.writeByte(index);
+        }
+
+        @Override
         public <T> void write(T obj, Class<T> cls) throws IOException {
             oos.writeObject(obj);
         }
@@ -33,6 +38,11 @@ public final class JavaSerializer implements ISerializer {
 
         public JavaReader(ObjectInputStream ois) {
             this.ois = ois;
+        }
+
+        @Override
+        public int readStreamIndex() throws IOException {
+            return ois.readByte();
         }
 
         @Override

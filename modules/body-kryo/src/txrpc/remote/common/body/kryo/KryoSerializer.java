@@ -30,6 +30,11 @@ public final class KryoSerializer implements ISerializer {
         }
 
         @Override
+        public void writeStreamIndex(int index) {
+            output.writeByte(index);
+        }
+
+        @Override
         public <T> void write(T obj, Class<T> cls) {
             try {
                 kryo.writeObject(output, obj);
@@ -56,6 +61,11 @@ public final class KryoSerializer implements ISerializer {
         public KryoReader(Kryo kryo, Input input) {
             this.kryo = kryo;
             this.input = input;
+        }
+
+        @Override
+        public int readStreamIndex() {
+            return input.readByte();
         }
 
         @Override

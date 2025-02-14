@@ -14,6 +14,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.lang.reflect.Method;
+import java.util.function.Consumer;
 
 public abstract class BaseBodyHttpRequest implements IHttpRequest {
 
@@ -48,11 +49,8 @@ public abstract class BaseBodyHttpRequest implements IHttpRequest {
         }
     }
 
-    private Either<?> getResult(TxRpcInteraction<IServerSessionId> interaction) throws IOException {
-        HttpRequest data;
-        try (ISerializer.Reader fromClient = serializer.newReader(in)) {
-            data = fromClient.read(HttpRequest.class);
-        }
+    private Either<?> getResult(TxRpcInteraction<IServerSessionId> interaction,
+                                HttpRequest data, ISerializer.Writer toClient) throws IOException {
         Object wireId = data.id;
         IServerSessionId sessionId = sessionId(wireId);
         HttpCommand command = data.getCommand();
@@ -68,7 +66,27 @@ public abstract class BaseBodyHttpRequest implements IHttpRequest {
             return interaction.endTransaction(sessionId, transactionId(wireId), command == HttpCommand.COMMIT);
         case INVOKE:
             Method method = findMethod(data);
-            return interaction.invoke(sessionId, transactionId(wireId), method, data.params);
+            if (data.streamIndexes != null) {
+                for (int streamIndex : data.streamIndexes) {
+                    Class<Object> itemType = HttpRequest.getStreamItemType(method, streamIndex);
+                    if (itemType == null) {
+                        throw new RemoteException("Parameter " + streamIndex + " must be Consumer");
+                    }
+                    data.params[streamIndex] = (Consumer<Object>) item -> {
+                        try {
+                            toClient.writeStreamIndex(streamIndex);
+                            toClient.write(item, itemType);
+                        } catch (IOException ex) {
+                            throw new RemoteException(ex);
+                        }
+                    };
+                }
+            }
+            Either<Object> result = interaction.invoke(sessionId, transactionId(wireId), method, data.params);
+            if (data.streamIndexes != null) {
+                toClient.writeStreamIndex(-1);
+            }
+            return result;
         case PING:
             return interaction.ping(sessionId);
         case CLOSE:
@@ -77,20 +95,23 @@ public abstract class BaseBodyHttpRequest implements IHttpRequest {
         throw new RemoteException("Unknown command");
     }
 
-    private void write(HttpResult result) throws IOException {
+    @Override
+    public final void perform(TxRpcInteraction<IServerSessionId> interaction) throws IOException {
+        HttpRequest data;
+        try (ISerializer.Reader fromClient = serializer.newReader(in)) {
+            data = fromClient.read(HttpRequest.class);
+        }
         try (ISerializer.Writer toClient = serializer.newWriter(out)) {
-            toClient.write(result, HttpResult.class);
+            Either<?> result = getResult(interaction, data, toClient);
+            HttpResult httpResult = new HttpResult(result.getResult(), result.getError());
+            toClient.write(httpResult, HttpResult.class);
         }
     }
 
     @Override
-    public final void perform(TxRpcInteraction<IServerSessionId> interaction) throws IOException {
-        Either<?> result = getResult(interaction);
-        write(new HttpResult(result.getResult(), result.getError()));
-    }
-
-    @Override
     public final void writeError(Throwable error) throws IOException {
-        write(new HttpResult(null, error));
+        try (ISerializer.Writer toClient = serializer.newWriter(out)) {
+            toClient.write(new HttpResult(null, error), HttpResult.class);
+        }
     }
 }

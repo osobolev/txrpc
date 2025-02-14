@@ -2,13 +2,16 @@ package txrpc.remote.client.body;
 
 import txrpc.remote.client.HttpClientUtil;
 import txrpc.remote.client.IClientSessionId;
+import txrpc.remote.common.RemoteException;
 import txrpc.remote.common.body.HttpRequest;
 import txrpc.remote.common.body.HttpResult;
 import txrpc.remote.common.body.ISerializer;
 import txrpc.remote.common.body.JavaSerializer;
 
 import java.io.IOException;
+import java.lang.reflect.Method;
 import java.net.*;
+import java.util.function.Consumer;
 
 public final class DefaultHttpClient implements IHttpClient {
 
@@ -63,14 +66,54 @@ public final class DefaultHttpClient implements IHttpClient {
         this.serializer = serializer;
     }
 
+    public static Object[] getStreams(HttpRequest request) {
+        if (request.streamIndexes != null) {
+            Object[] streams = new Object[request.streamIndexes.length];
+            for (int streamIndex : request.streamIndexes) {
+                streams[streamIndex] = request.params[streamIndex];
+                request.params[streamIndex] = null;
+            }
+            return streams;
+        } else {
+            return null;
+        }
+    }
+
+    @SuppressWarnings("unchecked")
+    public static void readStreams(ISerializer.Reader fromServer, Method method, Object[] streams) throws IOException {
+        if (streams == null)
+            return;
+        int lastIndex = -1;
+        Class<Object> itemType = null;
+        Consumer<Object> consumer = null;
+        while (true) {
+            int streamIndex = fromServer.readStreamIndex();
+            if (streamIndex < 0)
+                break;
+            if (streamIndex != lastIndex) {
+                itemType = HttpRequest.getStreamItemType(method, streamIndex);
+                if (itemType == null) {
+                    throw new RemoteException("Parameter " + streamIndex + " must be Consumer");
+                }
+                consumer = (Consumer<Object>) streams[streamIndex];
+                lastIndex = streamIndex;
+            }
+            Object item = fromServer.read(itemType);
+            consumer.accept(item);
+        }
+    }
+
     @Override
-    public HttpResult call(Class<?> retType, IClientSessionId sessionId, HttpRequest request) throws IOException {
+    public HttpResult call(Class<?> retType, IClientSessionId sessionId,
+                           Method method, HttpRequest request) throws IOException {
         HttpURLConnection conn = HttpClientUtil.open(url, proxy, connectTimeout);
         return HttpClientUtil.runQuery(conn, () -> {
+            Object[] streams = getStreams(request);
             try (ISerializer.Writer toServer = serializer.newWriter(conn.getOutputStream())) {
                 toServer.write(request, HttpRequest.class);
             }
             try (ISerializer.Reader fromServer = serializer.newReader(conn.getInputStream())) {
+                readStreams(fromServer, method, streams);
                 return fromServer.read(HttpResult.class);
             }
         });

@@ -10,6 +10,7 @@ import txrpc.remote.common.body.HttpResult;
 
 import java.io.IOException;
 import java.lang.reflect.Method;
+import java.util.Arrays;
 
 public abstract class BaseClientBodyInteraction implements TxRpcInteraction<IClientSessionId> {
 
@@ -35,12 +36,21 @@ public abstract class BaseClientBodyInteraction implements TxRpcInteraction<ICli
         return Either.error(error);
     }
 
-    private Either<Object> httpInvoke(Class<?> retType, IClientSessionId sessionId, String transactionId,
-                                      HttpCommand command, Class<? extends IDBCommon> iface, String method,
-                                      Class<?>[] paramTypes, Object[] params) throws IOException {
+    private Either<Object> doInvoke(Class<?> retType, IClientSessionId sessionId, String transactionId,
+                                    HttpCommand command, Class<? extends IDBCommon> iface,
+                                    Method method, Object[] params, int[] streamIndexes) throws IOException {
+        String methodName;
+        Class<?>[] paramTypes;
+        if (method == null) {
+            methodName = null;
+            paramTypes = null;
+        } else {
+            methodName = method.getName();
+            paramTypes = method.getParameterTypes();
+        }
         Object id = wireId(sessionId, transactionId);
-        HttpRequest request = new HttpRequest(id, command, iface, method, paramTypes, params);
-        HttpResult result = client.call(retType, sessionId, request);
+        HttpRequest request = new HttpRequest(id, command, iface, methodName, paramTypes, params, streamIndexes);
+        HttpResult result = client.call(retType, sessionId, method, request);
         Throwable error = result.error;
         if (error != null) {
             return serverException(error);
@@ -52,7 +62,9 @@ public abstract class BaseClientBodyInteraction implements TxRpcInteraction<ICli
     @SuppressWarnings("unchecked")
     private <T> Either<T> httpInvoke(Class<T> retType, IClientSessionId sessionId, String transactionId,
                                      HttpCommand command, Object... params) throws IOException {
-        return (Either<T>) httpInvoke(retType, sessionId, transactionId, command, null, null, null, params);
+        return (Either<T>) doInvoke(
+            retType, sessionId, transactionId, command, null, null, params, null
+        );
     }
 
     @Override
@@ -76,9 +88,24 @@ public abstract class BaseClientBodyInteraction implements TxRpcInteraction<ICli
     @Override
     public final Either<Object> invoke(IClientSessionId sessionId, String transactionId, Method method, Object[] args) throws IOException {
         Class<? extends IDBCommon> iface = (Class<? extends IDBCommon>) method.getDeclaringClass();
-        return httpInvoke(
+        int[] streamIndexes = null;
+        int nstreams = 0;
+        Class<?>[] paramTypes = method.getParameterTypes();
+        for (int i = 0; i < paramTypes.length; i++) {
+            Class<Object> itemType = HttpRequest.getStreamItemType(method, i);
+            if (itemType != null) {
+                if (streamIndexes == null) {
+                    streamIndexes = new int[paramTypes.length];
+                }
+                streamIndexes[nstreams++] = i;
+            }
+        }
+        if (streamIndexes != null) {
+            streamIndexes = Arrays.copyOf(streamIndexes, nstreams);
+        }
+        return doInvoke(
             method.getReturnType(), sessionId, transactionId, HttpCommand.INVOKE,
-            iface, method.getName(), method.getParameterTypes(), args
+            iface, method, args, streamIndexes
         );
     }
 
