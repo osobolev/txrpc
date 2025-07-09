@@ -268,8 +268,6 @@ public final class HttpDispatcher {
     public void dispatch(IHttpRequest request) throws IOException {
         try {
             request.perform(getInteraction(request));
-        } catch (RemoteException ex) {
-            request.writeError(ex);
         } catch (RuntimeException | Error ex) {
             log(ex);
             throw ex;
