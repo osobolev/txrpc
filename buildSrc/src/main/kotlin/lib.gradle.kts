@@ -1,11 +1,26 @@
+import com.vanniktech.maven.publish.JavaLibrary
+import com.vanniktech.maven.publish.JavadocJar
+
 plugins {
     id("base-lib")
+    id("com.vanniktech.maven.publish")
 }
 
 group = "io.github.osobolev.txrpc"
 version = "2.5"
 
-(publishing.publications["mavenJava"] as MavenPublication).pom {
+mavenPublishing {
+    publishToMavenCentral()
+    signAllPublications()
+
+    coordinates("${project.group}", "${project.name}", "${project.version}")
+    configure(JavaLibrary(
+        javadocJar = JavadocJar.Javadoc(),
+        sourcesJar = true
+    ))
+}
+
+mavenPublishing.pom {
     name.set("${project.group}:${project.name}")
     description.set("RPC that can do multiple remote calls within one transaction")
     url.set("https://github.com/osobolev/txrpc")
