@@ -101,10 +101,7 @@ public abstract class BaseBodyHttpRequest implements IHttpRequest {
         try (ISerializer.Reader fromClient = serializer.newReader(in)) {
             data = fromClient.read(HttpRequest.class);
         } catch (RemoteException ex) {
-            try (ISerializer.Writer toClient = serializer.newWriter(out)) {
-                HttpResult httpResult = new HttpResult(null, ex);
-                toClient.write(httpResult, HttpResult.class);
-            }
+            writeError(ex);
             return;
         }
         try (ISerializer.Writer toClient = serializer.newWriter(out)) {
@@ -115,6 +112,14 @@ public abstract class BaseBodyHttpRequest implements IHttpRequest {
             } catch (RemoteException ex) {
                 httpResult = new HttpResult(null, ex);
             }
+            toClient.write(httpResult, HttpResult.class);
+        }
+    }
+
+    @Override
+    public void writeError(Throwable error) throws IOException {
+        try (ISerializer.Writer toClient = serializer.newWriter(out)) {
+            HttpResult httpResult = new HttpResult(null, error);
             toClient.write(httpResult, HttpResult.class);
         }
     }

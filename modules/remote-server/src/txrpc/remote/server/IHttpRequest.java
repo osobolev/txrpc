@@ -11,4 +11,6 @@ public interface IHttpRequest {
     IServerSessionId newSessionId();
 
     void perform(TxRpcInteraction<IServerSessionId> interaction) throws IOException;
+
+    void writeError(Throwable error) throws IOException;
 }
