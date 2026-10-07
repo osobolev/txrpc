@@ -22,24 +22,24 @@ mavenPublishing {
 }
 
 mavenPublishing.pom {
-    name.set("${project.group}:${project.name}")
-    description.set("RPC that can do multiple remote calls within one transaction")
-    url.set("https://github.com/osobolev/txrpc")
+    name = "${project.group}:${project.name}"
+    description = "RPC that can do multiple remote calls within one transaction"
+    url = "https://github.com/osobolev/txrpc"
     licenses {
         license {
-            name.set("The Apache License, Version 2.0")
-            url.set("http://www.apache.org/licenses/LICENSE-2.0.txt")
+            name = "The Apache License, Version 2.0"
+            url = "http://www.apache.org/licenses/LICENSE-2.0.txt"
         }
     }
     developers {
         developer {
-            name.set("Oleg Sobolev")
-            organizationUrl.set("https://github.com/osobolev")
+            name = "Oleg Sobolev"
+            organizationUrl = "https://github.com/osobolev"
         }
     }
     scm {
-        connection.set("scm:git:https://github.com/osobolev/txrpc.git")
-        developerConnection.set("scm:git:https://github.com/osobolev/txrpc.git")
-        url.set("https://github.com/osobolev/txrpc")
+        connection = "scm:git:https://github.com/osobolev/txrpc.git"
+        developerConnection = "scm:git:https://github.com/osobolev/txrpc.git"
+        url = "https://github.com/osobolev/txrpc"
     }
 }
