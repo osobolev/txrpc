@@ -4,6 +4,6 @@ plugins {
 }
 
 dependencies {
-    api("com.esotericsoftware:kryo:5.6.2")
+    api("com.esotericsoftware:kryo:5.7.1")
     api(project(":txrpc-body-common"))
 }
