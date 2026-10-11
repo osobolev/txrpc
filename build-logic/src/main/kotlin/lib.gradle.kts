@@ -8,7 +8,6 @@ plugins {
 }
 
 group = "io.github.osobolev.txrpc"
-version = "2.6"
 
 mavenPublishing {
     publishToMavenCentral()
